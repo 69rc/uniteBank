@@ -40,7 +40,10 @@ export function useCreateTransaction() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error("Failed to create transaction");
+      if (!res.ok) {
+        const errorBody = await res.json().catch(() => ({}));
+        throw new Error(errorBody.message || "Failed to create transaction");
+      }
       return await res.json() as Transaction;
     },
     onSuccess: () => {

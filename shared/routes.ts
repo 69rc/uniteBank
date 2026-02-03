@@ -61,6 +61,28 @@ export const api = {
         401: errorSchemas.unauthorized,
       },
     },
+    forgotPassword: {
+      method: 'POST' as const,
+      path: '/api/auth/forgot-password',
+      input: z.object({ email: z.string().email() }),
+      responses: {
+        200: z.object({ message: z.string() }),
+        400: errorSchemas.validation,
+      },
+    },
+    resetPassword: {
+      method: 'POST' as const,
+      path: '/api/auth/reset-password',
+      input: z.object({
+        email: z.string().email(),
+        code: z.string().length(6),
+        newPassword: z.string().min(8),
+      }),
+      responses: {
+        200: z.object({ message: z.string() }),
+        400: errorSchemas.validation,
+      },
+    },
   },
   admin: {
     listUsers: {
@@ -90,7 +112,12 @@ export const api = {
     createTransaction: {
       method: 'POST' as const,
       path: '/api/admin/transactions',
-      input: insertTransactionSchema.omit({ createdBy: true }), // Admin always creates, but we set createdBy on backend
+      input: insertTransactionSchema
+        .omit({ createdBy: true })
+        .extend({
+          userId: z.coerce.number().int().min(1, "User is required"),
+          amount: z.coerce.string(), // Accept number and convert to string
+        }),
       responses: {
         201: z.custom<typeof transactions.$inferSelect>(),
         400: errorSchemas.validation,

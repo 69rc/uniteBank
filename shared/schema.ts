@@ -43,6 +43,7 @@ export const users = pgTable("users", {
   
   // Generated fields
   accountNumber: varchar("account_number", { length: 20 }).unique(), 
+  customerId: varchar("customer_id", { length: 15 }).unique(), // Auto-generated customer ID
   balance: numeric("balance", { precision: 12, scale: 2 }).default("0.00").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -51,6 +52,7 @@ export const otps = pgTable("otps", {
   id: serial("id").primaryKey(),
   email: text("email").notNull(),
   code: text("code").notNull(),
+  purpose: text("purpose").default("EMAIL_VERIFICATION").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
 });
 
@@ -69,6 +71,7 @@ export const insertUserSchema = createInsertSchema(users).omit({
   id: true, 
   createdAt: true, 
   accountNumber: true, 
+  customerId: true,
   balance: true,
   role: true, 
   status: true,

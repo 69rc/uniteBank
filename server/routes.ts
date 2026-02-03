@@ -11,6 +11,7 @@ import { promisify } from "util";
 import { otps } from "@shared/schema";
 import { pool } from "./db";
 import { createRequire } from "module";
+import { sendOtpEmail } from "./mailer";
 
 const require = createRequire(import.meta.url);
 const PgSession = require("connect-pg-simple")(session);
@@ -33,6 +34,11 @@ async function comparePasswords(supplied: string, stored: string) {
 // Simple account number generator
 function generateAccountNumber() {
   return '202' + Math.floor(100000000 + Math.random() * 900000000).toString();
+}
+
+// Customer ID generator
+function generateCustomerId() {
+  return 'CU' + Math.floor(1000000000000 + Math.random() * 9000000000000).toString();
 }
 
 export async function registerRoutes(
@@ -93,32 +99,57 @@ export async function registerRoutes(
   app.post(api.auth.register.path, async (req, res) => {
     try {
       const input = api.auth.register.input.parse(req.body);
+      console.log("Registration input received:", JSON.stringify(input, null, 2));
+      
       const existing = await storage.getUserByEmail(input.email);
       if (existing) {
         return res.status(400).json({ message: "Email already registered" });
       }
 
       const hashedPassword = await hashPassword(input.password);
-      const user = await storage.createUser({
+      const accountNumber = generateAccountNumber();
+      const customerId = generateCustomerId();
+      
+      const userToCreate = {
         ...input,
         password: hashedPassword,
+        accountNumber,
+        customerId,
         role: "USER",
         status: "PENDING",
         balance: "0.00",
         isEmailVerified: false,
-      });
+      };
+      
+      console.log("Creating user with data:", JSON.stringify(userToCreate, null, 2));
+      
+      const user = await storage.createUser(userToCreate);
 
       // Generate OTP
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       await storage.createOtp(user.email, code);
-      console.log(`[MOCK EMAIL] To: ${user.email}, OTP: ${code}`);
 
-      res.status(201).json({ message: "User created. Check console for OTP.", email: user.email });
+      try {
+        await sendOtpEmail(user.email, code, "EMAIL_VERIFICATION");
+        console.log(`[OTP EMAIL SENT] To: ${user.email}`);
+      } catch (emailErr) {
+        console.error("Failed to send OTP email", emailErr);
+        return res.status(500).json({
+          message:
+            "User created but we could not send the verification email. Please try again later.",
+        });
+      }
+
+      res.status(201).json({ 
+        message: "User created. Please verify your email with the OTP code sent to your email.", 
+        email: user.email
+      });
     } catch (err) {
+      console.error("Registration error:", err);
       if (err instanceof z.ZodError) {
         res.status(400).json({ message: err.errors[0].message });
       } else {
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: err.message || "Internal server error" });
       }
     }
   });
@@ -126,7 +157,7 @@ export async function registerRoutes(
   app.post(api.auth.verifyOtp.path, async (req, res) => {
     try {
       const { email, code } = api.auth.verifyOtp.input.parse(req.body);
-      const isValid = await storage.verifyOtp(email, code);
+      const isValid = await storage.verifyOtp(email, code, "EMAIL_VERIFICATION");
       
       if (!isValid) {
         return res.status(400).json({ message: "Invalid or expired OTP" });
@@ -144,13 +175,77 @@ export async function registerRoutes(
     }
   });
 
+  app.post(api.auth.forgotPassword.path, async (req, res) => {
+    try {
+      const { email } = api.auth.forgotPassword.input.parse(req.body);
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(200).json({ message: "If that email exists, we've sent an OTP." });
+      }
+
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      await storage.createOtp(email, code, "PASSWORD_RESET");
+      try {
+        await sendOtpEmail(email, code, "PASSWORD_RESET");
+      } catch (mailErr) {
+        console.error("Failed to send password reset OTP", mailErr);
+        return res.status(500).json({ message: "Unable to send OTP email. Please try again later." });
+      }
+
+      res.status(200).json({ message: "OTP sent. Please check your email." });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      res.status(500).json({ message: "Unable to start password reset." });
+    }
+  });
+
+  app.post(api.auth.resetPassword.path, async (req, res) => {
+    try {
+      const { email, code, newPassword } = api.auth.resetPassword.input.parse(req.body);
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(400).json({ message: "Invalid email" });
+      }
+
+      const isValid = await storage.verifyOtp(email, code, "PASSWORD_RESET");
+      if (!isValid) {
+        return res.status(400).json({ message: "Invalid or expired OTP" });
+      }
+
+      const hashedPassword = await hashPassword(newPassword);
+      await storage.updateUserPassword(user.id, hashedPassword);
+
+      res.status(200).json({ message: "Password updated. You can now login." });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      res.status(500).json({ message: "Unable to reset password." });
+    }
+  });
+
   app.post(api.auth.login.path, passport.authenticate("local"), (req, res) => {
     res.json(req.user);
   });
 
   app.post(api.auth.logout.path, (req, res) => {
-    req.logout(() => {
-      res.sendStatus(200);
+    req.logout((err) => {
+      if (err) {
+        console.error("Logout error:", err);
+        return res.status(500).json({ message: "Logout failed" });
+      }
+      
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Session destroy error:", err);
+          return res.status(500).json({ message: "Session destroy failed" });
+        }
+        
+        res.clearCookie('connect.sid'); // Clear session cookie
+        res.sendStatus(200);
+      });
     });
   });
 
@@ -161,7 +256,21 @@ export async function registerRoutes(
 
   // Admin Routes
   const requireAdmin = (req: any, res: any, next: any) => {
-    if (!req.isAuthenticated() || req.user.role !== "ADMIN") return res.sendStatus(403);
+    console.log("=== ADMIN CHECK ===");
+    console.log("Is authenticated:", req.isAuthenticated());
+    console.log("User:", req.user ? { id: req.user.id, email: req.user.email, role: req.user.role } : null);
+    
+    if (!req.isAuthenticated()) {
+      console.log("❌ Not authenticated");
+      return res.sendStatus(403);
+    }
+    
+    if (req.user.role !== "ADMIN") {
+      console.log("❌ Not admin, role:", req.user.role);
+      return res.sendStatus(403);
+    }
+    
+    console.log("✅ Admin check passed");
     next();
   };
 
@@ -192,13 +301,35 @@ export async function registerRoutes(
   });
 
   app.post(api.admin.createTransaction.path, requireAdmin, async (req, res) => {
+    console.log("=== TRANSACTION CREATION DEBUG ===");
+    console.log("1. Request received");
+    console.log("2. Admin check passed");
+    console.log("3. Raw request body:", JSON.stringify(req.body, null, 2));
+    
     try {
-      const input = api.admin.createTransaction.input.parse(req.body);
-      const tx = await storage.createTransaction({
-        ...input,
+      console.log("4. Starting input parsing...");
+      const parsedInput = api.admin.createTransaction.input.parse(req.body);
+      console.log("5. Input parsed successfully:", JSON.stringify(parsedInput, null, 2));
+
+      const input = {
+        ...parsedInput,
+        userId: Number(parsedInput.userId),
+        amount: parsedInput.amount.toString(),
+      };
+      console.log("5a. Normalized input:", JSON.stringify(input, null, 2));
+      
+      const transactionData = {
+        userId: input.userId,
+        type: input.type,
+        amount: input.amount, // Already converted to string by schema
+        description: input.description,
         createdBy: "ADMIN",
-        createdAt: new Date(),
-      });
+      };
+      
+      console.log("6. Transaction data prepared:", JSON.stringify(transactionData, null, 2));
+      
+      const tx = await storage.createTransaction(transactionData);
+      console.log("7. Transaction created successfully:", tx.id);
       
       // Update User Balance
       const user = await storage.getUser(input.userId);
@@ -209,12 +340,24 @@ export async function registerRoutes(
           ? (currentBalance + amount).toFixed(2)
           : (currentBalance - amount).toFixed(2);
         
+        console.log(`8. Updating balance for user ${user.id}: ${currentBalance} -> ${newBalance}`);
         await storage.updateUserBalance(user.id, newBalance);
       }
       
+      console.log("9. Transaction completed successfully");
       res.status(201).json(tx);
     } catch (err) {
-      res.status(400).json({ message: "Invalid transaction" });
+      console.error("=== TRANSACTION ERROR ===");
+      console.error("Error occurred:", err);
+      console.error("Error message:", err.message);
+      console.error("Error stack:", err.stack);
+      
+      if (err instanceof z.ZodError) {
+        console.error("Zod validation errors:", err.errors);
+        res.status(400).json({ message: `Validation error: ${err.errors[0].message}` });
+      } else {
+        res.status(400).json({ message: err.message || "Invalid transaction" });
+      }
     }
   });
 

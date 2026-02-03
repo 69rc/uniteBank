@@ -1,6 +1,6 @@
 import { users, otps, transactions, type User, type InsertUser, type Transaction, type InsertTransaction } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -12,10 +12,11 @@ export interface IStorage {
   getAllUsers(): Promise<User[]>;
   updateUserAccountNumber(id: number, accountNumber: string): Promise<User | undefined>;
   verifyUserEmail(email: string): Promise<void>;
+  updateUserPassword(id: number, password: string): Promise<void>;
 
   // OTPs
-  createOtp(email: string, code: string): Promise<void>;
-  verifyOtp(email: string, code: string): Promise<boolean>;
+  createOtp(email: string, code: string, purpose?: "EMAIL_VERIFICATION" | "PASSWORD_RESET"): Promise<void>;
+  verifyOtp(email: string, code: string, purpose?: "EMAIL_VERIFICATION" | "PASSWORD_RESET"): Promise<boolean>;
 
   // Transactions
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
@@ -58,19 +59,26 @@ export class DatabaseStorage implements IStorage {
     await db.update(users).set({ isEmailVerified: true }).where(eq(users.email, email));
   }
 
+  async updateUserPassword(id: number, password: string): Promise<void> {
+    await db.update(users).set({ password }).where(eq(users.id, id));
+  }
+
   async getAllUsers(): Promise<User[]> {
     return await db.select().from(users).orderBy(desc(users.createdAt));
   }
 
   // OTPs
-  async createOtp(email: string, code: string): Promise<void> {
-    await db.delete(otps).where(eq(otps.email, email));
+  async createOtp(email: string, code: string, purpose: "EMAIL_VERIFICATION" | "PASSWORD_RESET" = "EMAIL_VERIFICATION"): Promise<void> {
+    await db.delete(otps).where(and(eq(otps.email, email), eq(otps.purpose, purpose)));
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-    await db.insert(otps).values({ email, code, expiresAt });
+    await db.insert(otps).values({ email, code, expiresAt, purpose });
   }
 
-  async verifyOtp(email: string, code: string): Promise<boolean> {
-    const [otp] = await db.select().from(otps).where(eq(otps.email, email));
+  async verifyOtp(email: string, code: string, purpose: "EMAIL_VERIFICATION" | "PASSWORD_RESET" = "EMAIL_VERIFICATION"): Promise<boolean> {
+    const [otp] = await db
+      .select()
+      .from(otps)
+      .where(and(eq(otps.email, email), eq(otps.purpose, purpose)));
     if (!otp) return false;
     if (new Date() > otp.expiresAt) {
       await db.delete(otps).where(eq(otps.id, otp.id));

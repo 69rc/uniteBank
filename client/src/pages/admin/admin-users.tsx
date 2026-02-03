@@ -27,32 +27,36 @@ export default function AdminUsersPage() {
   if (authLoading) return null;
   if (!user || user.role !== "ADMIN") return <Redirect to="/dashboard" />;
 
-  const filteredUsers = users?.filter(u => 
-    u.email.toLowerCase().includes(search.toLowerCase()) || 
-    u.firstName.toLowerCase().includes(search.toLowerCase()) ||
-    u.lastName.toLowerCase().includes(search.toLowerCase())
+  const filteredUsers = users?.filter(
+    (u) =>
+      u.email.toLowerCase().includes(search.toLowerCase()) ||
+      u.firstName.toLowerCase().includes(search.toLowerCase()) ||
+      u.lastName.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <Layout>
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
+          <p className="text-sm font-semibold text-slate-400 tracking-[0.2em] uppercase">
+            Admin Console
+          </p>
           <h1 className="text-3xl font-display font-bold text-slate-900">User Management</h1>
           <p className="text-slate-500">Review KYC applications and manage accounts</p>
         </div>
       </div>
 
       <Card className="border-none shadow-xl shadow-slate-200/50">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between space-y-0 pb-4">
           <div className="space-y-1">
-             <CardTitle>All Users</CardTitle>
-             <CardDescription>Total users: {users?.length || 0}</CardDescription>
+            <CardTitle>All Users</CardTitle>
+            <CardDescription>Total users: {users?.length || 0}</CardDescription>
           </div>
-          <div className="relative w-64">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search users..." 
-              className="pl-8" 
+          <div className="relative w-full md:w-64">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search users..."
+              className="pl-10"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -60,57 +64,110 @@ export default function AdminUsersPage() {
         </CardHeader>
         <CardContent>
           {usersLoading ? (
-            <div className="flex justify-center p-8"><Loader2 className="animate-spin" /></div>
+            <div className="flex justify-center p-8">
+              <Loader2 className="animate-spin" />
+            </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Balance</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>User</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Balance</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredUsers?.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell className="font-medium">
+                          {user.firstName} {user.lastName}
+                        </TableCell>
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell>
+                          <StatusBadge status={user.status as any} />
+                        </TableCell>
+                        <TableCell className="font-mono">
+                          ${Number(user.balance).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {user.status === "PENDING" && (
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200"
+                                onClick={() => approveMutation.mutate(user.id)}
+                                disabled={approveMutation.isPending}
+                              >
+                                <Check className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                                onClick={() => rejectMutation.mutate(user.id)}
+                                disabled={rejectMutation.isPending}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="md:hidden space-y-4">
                 {filteredUsers?.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">
-                      {user.firstName} {user.lastName}
-                    </TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell><StatusBadge status={user.status as any} /></TableCell>
-                    <TableCell className="font-mono">
-                      ${Number(user.balance).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </TableCell>
-                    <TableCell className="text-right">
+                  <div key={user.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-4 shadow-sm">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div>
+                        <p className="font-semibold text-slate-900">
+                          {user.firstName} {user.lastName}
+                        </p>
+                        <p className="text-sm text-slate-500 break-all">{user.email}</p>
+                      </div>
+                      <StatusBadge status={user.status as any} />
+                    </div>
+                    <div className="flex flex-wrap items-center justify-between mt-4 gap-4">
+                      <div>
+                        <p className="text-xs text-slate-500">Balance</p>
+                        <p className="font-mono font-bold text-slate-900">
+                          ${Number(user.balance).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                        </p>
+                      </div>
                       {user.status === "PENDING" && (
-                        <div className="flex justify-end gap-2">
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200"
+                        <div className="flex gap-2 w-full sm:w-auto">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1 text-green-600 border-green-200"
                             onClick={() => approveMutation.mutate(user.id)}
                             disabled={approveMutation.isPending}
                           >
-                            <Check className="h-4 w-4" />
+                            Approve
                           </Button>
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             variant="outline"
-                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                            className="flex-1 text-red-600 border-red-200"
                             onClick={() => rejectMutation.mutate(user.id)}
                             disabled={rejectMutation.isPending}
                           >
-                            <X className="h-4 w-4" />
+                            Reject
                           </Button>
                         </div>
                       )}
-                    </TableCell>
-                  </TableRow>
+                    </div>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

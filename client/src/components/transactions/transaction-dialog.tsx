@@ -26,6 +26,7 @@ export function CreateTransactionDialog() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      userId: undefined,
       type: "CREDIT",
       description: "",
       amount: 0,
@@ -42,17 +43,17 @@ export function CreateTransactionDialog() {
   }
 
   // Filter only approved users for transactions
-  const approvedUsers = users?.filter(u => u.status === "APPROVED") || [];
+  const approvedUsers = users?.filter((u) => u.status === "APPROVED") || [];
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2 bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20">
+        <Button className="gap-2 bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 w-full sm:w-auto">
           <Plus className="w-4 h-4" />
           New Transaction
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] w-[95vw] rounded-2xl">
         <DialogHeader>
           <DialogTitle>Process Transaction</DialogTitle>
         </DialogHeader>
@@ -64,13 +65,13 @@ export function CreateTransactionDialog() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>User</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value?.toString()}>
+                  <Select onValueChange={(value) => field.onChange(Number(value))} value={field.value ? String(field.value) : undefined}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a customer" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent className="max-h-64">
                       {approvedUsers.map((user) => (
                         <SelectItem key={user.id} value={user.id.toString()}>
                           {user.firstName} {user.lastName} ({user.accountNumber})
@@ -82,15 +83,15 @@ export function CreateTransactionDialog() {
                 </FormItem>
               )}
             />
-            
-            <div className="grid grid-cols-2 gap-4">
+
+            <div className="grid gap-4 sm:grid-cols-2">
               <FormField
                 control={form.control}
                 name="type"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue />
