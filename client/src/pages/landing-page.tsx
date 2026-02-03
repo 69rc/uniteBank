@@ -314,6 +314,15 @@ export default function LandingPage() {
               <a href="#" className="hover:text-white">
                 Instagram
               </a>
+              <a
+                href="https://wa.me/13107409287"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-white"
+                aria-label="Chat with us on WhatsApp"
+              >
+                WhatsApp
+              </a>
             </div>
           </div>
         </div>

@@ -1,0 +1,14 @@
+# Database Configuration
+DATABASE_URL="postgresql://postgres:Bashir200469%40@db.nzdrjzneghitaaapyaul.supabase.co:5432/postgres?sslmode=require"
+
+# Application Configuration
+NODE_ENV=development
+PORT=5001
+
+# Email (Nodemailer / Gmail)
+SMTP_SERVICE=gmail
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_USER=unitedhorizonbank@gmail.com
+SMTP_PASS=yuifr fsln aptp giyw
+EMAIL_FROM=United Horizon Bank unitedhorizonbank@gmail.com
