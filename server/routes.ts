@@ -135,28 +135,7 @@ export async function registerRoutes(
       // Mark user as verified
       const user = await storage.getUserByEmail(email);
       if (user) {
-         // Direct DB update for verify flag (not in interface, adding ad-hoc query or updating interface)
-         // Since I missed adding verifyUser to interface, I'll assume users are verified if they pass OTP?
-         // No, I need to update the record.
-         // Let's use `updateUserStatus` but I need to update `isEmailVerified`
-         // I'll cheat and use raw db or just rely on 'status' PENDING?
-         // Wait, I updated schema but not storage.ts interface. I should have updated storage.ts.
-         // Let's update storage.ts first? No, I'll do it in memory or raw query here?
-         // I'll use `db` directly here for simplicity since I forgot to add it to `IStorage`.
-         // Or I can just cast it.
-         await import("./db").then(({ db }) => 
-           db.update(import("@shared/schema").then(m => m.users).then(u => u as any)).set({ isEmailVerified: true }).where(import("drizzle-orm").then(m => m.eq(import("@shared/schema").then(s => s.users.email) as any, email)))
-         );
-         // That's too complex with dynamic imports/async.
-         // I'll just skip the `isEmailVerified` check in login for now or assume `verifyOtp` does it.
-         // Wait, I can update storage.ts in the next step? No, `registerRoutes` is in Batch 3.
-         // I'll implement a quick helper in storage if I can.
-         // Actually, I can just rely on the existing `updateUserStatus` to also set verified? No.
-         // I'll use the 'PENDING' status as 'Verified but Pending'. 
-         // But I have `isEmailVerified` column now.
-         // I will assume the `storage` interface has `verifyUserEmail(email: string)` and I will implement it in storage.ts next.
-         // But I write files in parallel. 
-         // I will write `storage.ts` AGAIN with the new method.
+        await storage.verifyUserEmail(email);
       }
 
       res.status(200).json({ message: "Email verified. Please login.", user });
@@ -263,8 +242,18 @@ export async function registerRoutes(
         email: adminEmail,
         phone: "0000000000",
         dob: "2000-01-01",
+        gender: "OTHER",
+        nationality: "US",
         address: "Bank HQ",
+        city: "New York",
+        state: "NY",
         country: "US",
+        zipCode: "10001",
+        idType: "PASSPORT",
+        idNumber: "ADMIN001",
+        idExpiryDate: "2030-01-01",
+        accountType: "CHECKING",
+        transactionPin: "1234",
         password: hashedPassword,
         role: "ADMIN",
         status: "APPROVED",

@@ -6,11 +6,12 @@ export interface IStorage {
   // Users
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
-  createUser(user: InsertUser & { role: "USER" | "ADMIN"; status: "PENDING" | "APPROVED" | "REJECTED"; balance: string }): Promise<User>;
+  createUser(user: any): Promise<User>;
   updateUserStatus(id: number, status: "PENDING" | "APPROVED" | "REJECTED"): Promise<User | undefined>;
   updateUserBalance(id: number, balance: string): Promise<User | undefined>;
   getAllUsers(): Promise<User[]>;
   updateUserAccountNumber(id: number, accountNumber: string): Promise<User | undefined>;
+  verifyUserEmail(email: string): Promise<void>;
 
   // OTPs
   createOtp(email: string, code: string): Promise<void>;
@@ -33,7 +34,7 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async createUser(user: InsertUser & { role: "USER" | "ADMIN"; status: "PENDING" | "APPROVED" | "REJECTED"; balance: string }): Promise<User> {
+  async createUser(user: any): Promise<User> {
     const [newUser] = await db.insert(users).values(user).returning();
     return newUser;
   }
@@ -53,16 +54,17 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async verifyUserEmail(email: string): Promise<void> {
+    await db.update(users).set({ isEmailVerified: true }).where(eq(users.email, email));
+  }
+
   async getAllUsers(): Promise<User[]> {
     return await db.select().from(users).orderBy(desc(users.createdAt));
   }
 
   // OTPs
   async createOtp(email: string, code: string): Promise<void> {
-    // Delete existing OTPs for this email first
     await db.delete(otps).where(eq(otps.email, email));
-    
-    // Create new OTP expires in 5 minutes
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
     await db.insert(otps).values({ email, code, expiresAt });
   }
@@ -70,15 +72,11 @@ export class DatabaseStorage implements IStorage {
   async verifyOtp(email: string, code: string): Promise<boolean> {
     const [otp] = await db.select().from(otps).where(eq(otps.email, email));
     if (!otp) return false;
-    
     if (new Date() > otp.expiresAt) {
       await db.delete(otps).where(eq(otps.id, otp.id));
       return false;
     }
-    
     if (otp.code !== code) return false;
-    
-    // Valid OTP, delete it
     await db.delete(otps).where(eq(otps.id, otp.id));
     return true;
   }
