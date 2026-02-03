@@ -1,0 +1,229 @@
+Build a full-stack banking web application called UnitedHorizonBank using Next.js (App Router), PostgreSQL as the database, and modern best practices.
+
+🔐 ROLES & AUTHENTICATION
+
+The system must have two roles:
+
+1. USER
+
+Can register and create a bank account
+
+Must provide full banking KYC details:
+
+First name
+
+Last name
+
+Email (must be valid)
+
+Phone number
+
+Date of birth
+
+Address
+
+Country
+
+Password (hashed)
+
+Registration requires email OTP verification
+
+Generate a 6-digit OTP
+
+Send OTP to user email
+
+OTP expires after 5 minutes
+
+After OTP verification, account status = PENDING
+
+User cannot transact until approved by admin
+
+Once approved:
+
+User can:
+
+View account balance (USD only)
+
+View transaction history
+
+View account details
+
+2. ADMIN
+
+Admin authentication (email + password)
+
+Admin dashboard must allow:
+
+View all users
+
+Approve or reject user accounts
+
+Top-up user accounts (deposit in USD)
+
+Create transactions manually (credit / debit)
+
+Edit transactions
+
+View all transactions system-wide
+
+💰 BANKING LOGIC
+
+Currency: USD only
+
+Each user has:
+
+Unique account number
+
+Balance (decimal)
+
+Transactions:
+
+Type: CREDIT or DEBIT
+
+Amount (USD)
+
+Description
+
+Date
+
+Created by admin or system
+
+🧱 TECH STACK REQUIREMENTS
+
+Frontend: Next.js (App Router)
+
+Backend: Next.js API routes / server actions
+
+Database: PostgreSQL
+
+ORM: Prisma
+
+Auth: Custom auth with JWT or session-based auth
+
+Email: SMTP (for OTP email sending)
+
+Styling: Tailwind CSS
+
+🗄️ DATABASE REQUIREMENTS
+
+Use PostgreSQL and provide the full Prisma schema, including:
+
+Tables / Models:
+
+User
+
+id
+
+firstName
+
+lastName
+
+email (unique)
+
+phone
+
+dob
+
+address
+
+country
+
+passwordHash
+
+role (USER / ADMIN)
+
+status (PENDING / APPROVED / REJECTED)
+
+accountNumber
+
+balance (USD)
+
+createdAt
+
+OTP
+
+id
+
+email
+
+code
+
+expiresAt
+
+Transaction
+
+id
+
+userId
+
+type (CREDIT / DEBIT)
+
+amount
+
+description
+
+createdAt
+
+createdBy (ADMIN)
+
+🖥️ ADMIN DASHBOARD
+
+Build a clean admin dashboard that allows:
+
+User approval
+
+Balance top-up
+
+Transaction creation & editing
+
+View database records in tables (users & transactions)
+
+🧑‍💻 USER DASHBOARD
+
+Build a user dashboard where users can:
+
+See account number
+
+See balance (USD)
+
+See transaction history
+
+See account approval status
+
+📦 PROJECT STRUCTURE
+
+Use a clean Next.js project structure:
+
+/app
+
+/app/api
+
+/app/admin
+
+/app/dashboard
+
+/lib
+
+/prisma
+
+✅ FINAL OUTPUT REQUIRED
+
+Full working Next.js app
+
+Prisma schema (PostgreSQL)
+
+Database migrations
+
+Sample .env file
+
+Admin seed account
+
+Clear instructions on how to:
+
+Run the app
+
+View the database
+
+Test OTP
+
+Build this as a production-ready demo banking application named UnitedHorizonBank.
