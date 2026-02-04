@@ -149,7 +149,8 @@ export async function registerRoutes(
       if (err instanceof z.ZodError) {
         res.status(400).json({ message: err.errors[0].message });
       } else {
-        res.status(500).json({ message: err.message || "Internal server error" });
+        const errorMessage = err instanceof Error ? err.message : "Internal server error";
+        res.status(500).json({ message: errorMessage });
       }
     }
   });
@@ -280,7 +281,8 @@ export async function registerRoutes(
   });
 
   app.post(api.admin.approveUser.path, requireAdmin, async (req, res) => {
-    const id = parseInt(req.params.id);
+    const idString = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const id = parseInt(idString);
     const user = await storage.updateUserStatus(id, "APPROVED");
     if (!user) return res.status(404).send("User not found");
     
@@ -294,7 +296,8 @@ export async function registerRoutes(
   });
 
   app.post(api.admin.rejectUser.path, requireAdmin, async (req, res) => {
-    const id = parseInt(req.params.id);
+    const idString = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const id = parseInt(idString);
     const user = await storage.updateUserStatus(id, "REJECTED");
     if (!user) return res.status(404).send("User not found");
     res.json(user);
@@ -323,7 +326,7 @@ export async function registerRoutes(
         type: input.type,
         amount: input.amount, // Already converted to string by schema
         description: input.description,
-        createdBy: "ADMIN",
+        createdBy: "ADMIN" as const,
       };
       
       console.log("6. Transaction data prepared:", JSON.stringify(transactionData, null, 2));
@@ -349,14 +352,17 @@ export async function registerRoutes(
     } catch (err) {
       console.error("=== TRANSACTION ERROR ===");
       console.error("Error occurred:", err);
-      console.error("Error message:", err.message);
-      console.error("Error stack:", err.stack);
-      
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      const errorStack = err instanceof Error ? err.stack : undefined;
+
+      console.error("Error message:", errorMessage);
+      if (errorStack) console.error("Error stack:", errorStack);
+
       if (err instanceof z.ZodError) {
         console.error("Zod validation errors:", err.errors);
         res.status(400).json({ message: `Validation error: ${err.errors[0].message}` });
       } else {
-        res.status(400).json({ message: err.message || "Invalid transaction" });
+        res.status(400).json({ message: errorMessage || "Invalid transaction" });
       }
     }
   });
@@ -369,7 +375,7 @@ export async function registerRoutes(
   // User Routes
   app.get(api.user.listTransactions.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    const txs = await storage.getTransactionsByUserId(req.user!.id);
+    const txs = await storage.getTransactionsByUserId((req.user as any).id);
     res.json(txs);
   });
   

@@ -256,15 +256,25 @@ function RegisterForm({ onSuccess }: { onSuccess: (email: string, otp?: string |
               <FormField
                 control={form.control}
                 name="otherName"
-                render={({ field }) => (
+                render={({ field }) => {
+                  // Handle null values by converting to empty string
+                  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                    field.onChange(e.target.value || null);
+                  };
+
+                  return (
                   <FormItem>
                     <FormLabel>Other Name (Optional)</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input
+                        {...field}
+                        value={field.value || ''}
+                        onChange={handleChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
-                )}
+                );}}
               />
 
               <div className="grid gap-4 sm:grid-cols-2">
@@ -532,18 +542,27 @@ function RegisterForm({ onSuccess }: { onSuccess: (email: string, otp?: string |
               <FormField
                 control={form.control}
                 name="accountPurpose"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Account Purpose (Optional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="e.g., Personal savings, Business operations"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  // Handle null values by converting to empty string
+                  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                    field.onChange(e.target.value || null);
+                  };
+
+                  return (
+                    <FormItem>
+                      <FormLabel>Account Purpose (Optional)</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          value={field.value || ''}
+                          placeholder="e.g., Personal savings, Business operations"
+                          onChange={handleChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
             </div>
 

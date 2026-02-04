@@ -34,7 +34,11 @@ export function CreateTransactionDialog() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    mutate(values, {
+    const transformedValues = {
+      ...values,
+      amount: values.amount.toString(), // Convert number to string for API
+    };
+    mutate(transformedValues, {
       onSuccess: () => {
         setOpen(false);
         form.reset();

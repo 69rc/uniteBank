@@ -1,0 +1,13 @@
+var R=require("../../chunks/ssr/[turbopack]_runtime.js")("server/app/_not-found/page.js")
+R.c("server/chunks/ssr/[root-of-the-server]__efd24e4d._.js")
+R.c("server/chunks/ssr/2b953_next_dist_f7226a4d._.js")
+R.c("server/chunks/ssr/2b953_next_dist_esm_build_templates_app-page_1d6fcd28.js")
+R.c("server/chunks/ssr/[root-of-the-server]__4b5a0518._.js")
+R.c("server/chunks/ssr/2b953_next_dist_dda2eca2._.js")
+R.c("server/chunks/ssr/2b953_next_dist_17dbcfa8._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__a0b8fbf0._.js")
+R.c("server/chunks/ssr/2b953_next_dist_client_components_9e90d068._.js")
+R.c("server/chunks/ssr/2b953_next_dist_client_components_builtin_forbidden_9390b74b.js")
+R.c("server/chunks/ssr/Documents_uniteBank__next-internal_server_app__not-found_page_actions_c1d50b64.js")
+R.m(59866)
+module.exports=R.m(59866).exports
