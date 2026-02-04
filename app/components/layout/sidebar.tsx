@@ -64,7 +64,7 @@ export function Sidebar() {
             const isActive = location === item.href;
             return (
               <Link
-                key={item.href}
+                key={`${item.href}-${item.label}`}
                 href={item.href}
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
@@ -162,7 +162,7 @@ function MobileNav() {
                     const isActive = location === item.href;
                     return (
                       <Link
-                        key={item.href}
+                        key={`${item.href}-${item.label}`}
                         href={item.href}
                         onClick={() => setOpen(false)}
                         className={cn(

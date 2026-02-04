@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { api } from '@shared/routes';
-import { storage } from '@server/storage';
+import { adminStorage } from '@server/storage';
 import { isAdmin, getCurrentUserFromRequest } from '@lib/auth';
 
 // Helper function to validate admin access
@@ -13,6 +13,19 @@ async function requireAdmin(request: Request): Promise<{ authenticated: boolean;
 
   const user = await getCurrentUserFromRequest(request);
   return { authenticated: true, user };
+}
+
+export async function GET(request: NextRequest) {
+  const adminCheck = await requireAdmin(request);
+  if (!adminCheck.authenticated) {
+    return new Response(JSON.stringify({ message: "Forbidden" }), {
+      status: 403,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+
+  const txs = await adminStorage.getAllTransactions();
+  return Response.json(txs);
 }
 
 export async function POST(request: NextRequest) {
@@ -53,11 +66,11 @@ export async function POST(request: NextRequest) {
 
     console.log("6. Transaction data prepared:", JSON.stringify(transactionData, null, 2));
 
-    const tx = await storage.createTransaction(transactionData);
+    const tx = await adminStorage.createTransaction(transactionData);
     console.log("7. Transaction created successfully:", tx.id);
 
     // Update User Balance
-    const user = await storage.getUser(input.userId);
+    const user = await adminStorage.getUser(input.userId);
     if (user) {
       const currentBalance = parseFloat(user.balance);
       const amount = parseFloat(input.amount);
@@ -66,7 +79,7 @@ export async function POST(request: NextRequest) {
         : (currentBalance - amount).toFixed(2);
 
       console.log(`8. Updating balance for user ${user.id}: ${currentBalance} -> ${newBalance}`);
-      await storage.updateUserBalance(user.id, newBalance);
+      await adminStorage.updateUserBalance(user.id, newBalance);
     }
 
     console.log("9. Transaction completed successfully");

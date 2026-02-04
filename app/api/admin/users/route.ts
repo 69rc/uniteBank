@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { storage } from '@server/storage';
+import { adminStorage } from '@server/storage';
 import { isAdmin, getCurrentUserFromRequest } from '@lib/auth';
 
 // Helper function to validate admin access
@@ -23,6 +23,6 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const users = await storage.getAllUsers();
+  const users = await adminStorage.getAllUsers();
   return Response.json(users);
 }

@@ -1,0 +1,574 @@
+import { createAdminSupabaseClient, supabase } from '@lib/supabase';
+import { User, Transaction } from '@shared/schema';
+
+export interface IStorage {
+  // Users
+  getUser(id: number): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: any): Promise<User>;
+  updateUserStatus(id: number, status: "PENDING" | "APPROVED" | "REJECTED"): Promise<User | undefined>;
+  updateUserBalance(id: number, balance: string): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
+  updateUserAccountNumber(id: number, accountNumber: string): Promise<User | undefined>;
+  verifyUserEmail(email: string): Promise<void>;
+  updateUserPassword(id: number, password: string): Promise<void>;
+
+  // OTPs
+  createOtp(email: string, code: string, purpose?: "EMAIL_VERIFICATION" | "PASSWORD_RESET"): Promise<void>;
+  verifyOtp(email: string, code: string, purpose?: "EMAIL_VERIFICATION" | "PASSWORD_RESET"): Promise<boolean>;
+
+  // Transactions
+  createTransaction(transaction: any): Promise<Transaction>;
+  getTransactionsByUserId(userId: number): Promise<Transaction[]>;
+  getAllTransactions(): Promise<Transaction[]>;
+}
+
+// Helper functions to convert between snake_case and camelCase
+function snakeToCamel<T extends Record<string, any>>(obj: T): any {
+  const result = {} as any;
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+      result[camelKey] = obj[key];
+    }
+  }
+  return result;
+}
+
+function camelToSnake<T extends Record<string, any>>(obj: T): any {
+  const result = {} as any;
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      const snakeKey = key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+      result[snakeKey] = obj[key];
+    }
+  }
+  return result;
+}
+
+export class SupabaseAdminStorage implements IStorage {
+  // Methods that require admin privileges
+  async getUser(id: number): Promise<User | undefined> {
+    const adminClient = await createAdminSupabaseClient();
+    const { data, error } = await adminClient
+      .from('users')
+      .select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        isEmailVerified,
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `)
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    // Transform snake_case response to camelCase to match schema
+    if (data) {
+      return snakeToCamel(data) as User;
+    }
+    return undefined;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const adminClient = await createAdminSupabaseClient();
+    const { data, error } = await adminClient
+      .from('users')
+      .select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        isEmailVerified,
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `)
+      .eq('email', email)
+      .maybeSingle();
+
+    if (error) throw error;
+    // Transform snake_case response to camelCase to match schema
+    if (data) {
+      return snakeToCamel(data) as User;
+    }
+    return undefined;
+  }
+
+  async createUser(user: any): Promise<User> {
+    const adminClient = await createAdminSupabaseClient();
+    // Convert camelCase to snake_case for insertion
+    const snakeUser = camelToSnake(user);
+    const { data, error } = await adminClient
+      .from('users')
+      .insert([snakeUser])
+      .select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        isEmailVerified,
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `)
+      .single();
+
+    if (error) throw error;
+    // Transform snake_case response to camelCase to match schema
+    if (data) {
+      return snakeToCamel(data) as User;
+    }
+    throw new Error('User creation failed');
+  }
+
+  async updateUserStatus(id: number, status: "PENDING" | "APPROVED" | "REJECTED"): Promise<User | undefined> {
+    const adminClient = await createAdminSupabaseClient();
+    const { data, error } = await adminClient
+      .from('users')
+      .update({ status })
+      .eq('id', id)
+      .select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        isEmailVerified,
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `)
+      .single();
+
+    if (error) throw error;
+    // Transform snake_case response to camelCase to match schema
+    if (data) {
+      return snakeToCamel(data) as User;
+    }
+    return undefined;
+  }
+
+  async updateUserBalance(id: number, balance: string): Promise<User | undefined> {
+    const adminClient = await createAdminSupabaseClient();
+    const { data, error } = await adminClient
+      .from('users')
+      .update({ balance })
+      .eq('id', id)
+      .select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        isEmailVerified,
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `)
+      .single();
+
+    if (error) throw error;
+    // Transform snake_case response to camelCase to match schema
+    if (data) {
+      return snakeToCamel(data) as User;
+    }
+    return undefined;
+  }
+
+  async updateUserAccountNumber(id: number, accountNumber: string): Promise<User | undefined> {
+    const adminClient = await createAdminSupabaseClient();
+    const { data, error } = await adminClient
+      .from('users')
+      .update({ account_number: accountNumber })
+      .eq('id', id)
+      .select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        isEmailVerified,
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `)
+      .single();
+
+    if (error) throw error;
+    // Transform snake_case response to camelCase to match schema
+    if (data) {
+      return snakeToCamel(data) as User;
+    }
+    return undefined;
+  }
+
+  async verifyUserEmail(email: string): Promise<void> {
+    const adminClient = await createAdminSupabaseClient();
+    const { error } = await adminClient
+      .from('users')
+      .update({ isEmailVerified: true })
+      .eq('email', email);
+
+    if (error) throw error;
+  }
+
+  async updateUserPassword(id: number, password: string): Promise<void> {
+    const adminClient = await createAdminSupabaseClient();
+    const { error } = await adminClient
+      .from('users')
+      .update({ password })
+      .eq('id', id);
+
+    if (error) throw error;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    const adminClient = await createAdminSupabaseClient();
+    const { data, error } = await adminClient
+      .from('users')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data?.map(snakeToCamel) as User[] || [];
+  }
+
+  // OTPs
+  async createOtp(email: string, code: string, purpose: "EMAIL_VERIFICATION" | "PASSWORD_RESET" = "EMAIL_VERIFICATION"): Promise<void> {
+    const adminClient = await createAdminSupabaseClient();
+    // First delete any existing OTPs for this email
+    await adminClient
+      .from('otps')
+      .delete()
+      .match({ email });
+
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
+    const { error } = await adminClient
+      .from('otps')
+      .insert([{ email, code, expires_at: expiresAt.toISOString() }]);
+
+    if (error) throw error;
+  }
+
+  async verifyOtp(email: string, code: string, purpose: "EMAIL_VERIFICATION" | "PASSWORD_RESET" = "EMAIL_VERIFICATION"): Promise<boolean> {
+    const adminClient = await createAdminSupabaseClient();
+    const { data, error } = await adminClient
+      .from('otps')
+      .select('*')
+      .match({ email, code })
+      .maybeSingle();
+
+    if (error || !data) return false;
+
+    // Check expiration
+    if (new Date() > new Date(data.expires_at ?? data.expiresAt)) {
+      // Delete expired OTP
+      await adminClient
+        .from('otps')
+        .delete()
+        .eq('id', data.id);
+      return false;
+    }
+
+    // Delete OTP after successful verification
+    await adminClient
+      .from('otps')
+      .delete()
+      .eq('id', data.id);
+      
+    return true;
+  }
+
+  // Transactions
+  async createTransaction(transaction: any): Promise<Transaction> {
+    const adminClient = await createAdminSupabaseClient();
+    // Convert camelCase to snake_case for insertion
+    const snakeTransaction = camelToSnake(transaction);
+    const { data, error } = await adminClient
+      .from('transactions')
+      .insert([snakeTransaction])
+      .select(`
+        id,
+        user_id,
+        type,
+        amount,
+        description,
+        created_by,
+        created_at
+      `)
+      .single();
+
+    if (error) throw error;
+    // Transform snake_case response to camelCase to match schema
+    if (data) {
+      return snakeToCamel(data) as Transaction;
+    }
+    throw new Error('Transaction creation failed');
+  }
+
+  async getTransactionsByUserId(userId: number): Promise<Transaction[]> {
+    const adminClient = await createAdminSupabaseClient();
+    const { data, error } = await adminClient
+      .from('transactions')
+      .select(`
+        id,
+        user_id,
+        type,
+        amount,
+        description,
+        created_by,
+        created_at
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    // Transform snake_case response to camelCase to match schema
+    return data?.map(snakeToCamel) as Transaction[] || [];
+  }
+
+  async getAllTransactions(): Promise<Transaction[]> {
+    const adminClient = await createAdminSupabaseClient();
+    const { data, error } = await adminClient
+      .from('transactions')
+      .select(`
+        id,
+        user_id,
+        type,
+        amount,
+        description,
+        created_by,
+        created_at
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    // Transform snake_case response to camelCase to match schema
+    return data?.map(snakeToCamel) as Transaction[] || [];
+  }
+}
+
+// For non-admin operations, use the regular client
+export class SupabasePublicStorage implements IStorage {
+  // Public methods that don't require admin privileges
+  async getUser(id: number): Promise<User | undefined> {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data ?? undefined;
+  }
+
+  async getTransactionsByUserId(userId: number): Promise<Transaction[]> {
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data?.map(snakeToCamel) as Transaction[] || [];
+  }
+
+  // Other public methods should throw an error since they require admin access
+  async createUser(user: any): Promise<User> {
+    throw new Error("Create user must be done through public registration endpoint");
+  }
+
+  async updateUserStatus(id: number, status: "PENDING" | "APPROVED" | "REJECTED"): Promise<User | undefined> {
+    throw new Error("Update user status requires admin privileges");
+  }
+
+  async updateUserBalance(id: number, balance: string): Promise<User | undefined> {
+    throw new Error("Update user balance requires admin privileges");
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    throw new Error("Get all users requires admin privileges");
+  }
+
+  async updateUserAccountNumber(id: number, accountNumber: string): Promise<User | undefined> {
+    throw new Error("Update account number requires admin privileges");
+  }
+
+  async verifyUserEmail(email: string): Promise<void> {
+    throw new Error("Verify email requires admin privileges");
+  }
+
+  async updateUserPassword(id: number, password: string): Promise<void> {
+    throw new Error("Update password requires admin privileges");
+  }
+
+  async createOtp(email: string, code: string, purpose: "EMAIL_VERIFICATION" | "PASSWORD_RESET"): Promise<void> {
+    throw new Error("Create OTP requires admin privileges");
+  }
+
+  async verifyOtp(email: string, code: string, purpose: "EMAIL_VERIFICATION" | "PASSWORD_RESET"): Promise<boolean> {
+    throw new Error("Verify OTP requires admin privileges");
+  }
+
+  async createTransaction(transaction: any): Promise<Transaction> {
+    throw new Error("Create transaction requires admin privileges");
+  }
+
+  async getAllTransactions(): Promise<Transaction[]> {
+    throw new Error("Get all transactions requires admin privileges");
+  }
+}
+
+// Export admin storage for server-side operations
+export const adminStorage = new SupabaseAdminStorage();
+export const publicStorage = new SupabasePublicStorage();

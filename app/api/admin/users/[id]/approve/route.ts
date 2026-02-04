@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { storage } from '@server/storage';
+import { adminStorage } from '@server/storage';
 import { generateAccountNumber } from '../../../../utils/user';
 import { isAdmin, getCurrentUserFromRequest } from '@lib/auth';
 
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     });
   }
 
-  const user = await storage.updateUserStatus(userId, "APPROVED");
+  const user = await adminStorage.updateUserStatus(userId, "APPROVED");
   if (!user) {
     return new Response(JSON.stringify({ message: "User not found" }), {
       status: 404,
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   // Generate account number if not exists
   if (!user.accountNumber) {
     const accNum = generateAccountNumber();
-    await storage.updateUserAccountNumber(userId, accNum);
+    await adminStorage.updateUserAccountNumber(userId, accNum);
   }
 
   return Response.json(user);

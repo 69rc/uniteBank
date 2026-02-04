@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { api } from '@shared/routes';
-import { storage } from '@server/storage';
+import { adminStorage } from '@server/storage';
 import { hashPassword } from '../../utils/auth';
 import { generateAccountNumber, generateCustomerId } from '../../utils/user';
 import { sendOtpEmail } from '@server/mailer';
@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     const input = api.auth.register.input.parse(await request.json());
     console.log("Registration input received:", JSON.stringify(input, null, 2));
 
-    const existing = await storage.getUserByEmail(input.email);
+    const existing = await adminStorage.getUserByEmail(input.email);
     if (existing) {
       return Response.json({ message: "Email already registered" }, { status: 400 });
     }
@@ -30,13 +30,45 @@ export async function POST(request: NextRequest) {
       isEmailVerified: false,
     };
 
+    const dbPayload = {
+      first_name: userToCreate.firstName,
+      last_name: userToCreate.lastName,
+      other_name: userToCreate.otherName ?? null,
+      email: userToCreate.email,
+      phone: userToCreate.phone,
+      dob: userToCreate.dob,
+      gender: userToCreate.gender,
+      nationality: userToCreate.nationality,
+      address: userToCreate.address,
+      city: userToCreate.city,
+      state: userToCreate.state,
+      country: userToCreate.country,
+      zip_code: userToCreate.zipCode,
+      id_type: userToCreate.idType,
+      id_number: userToCreate.idNumber,
+      id_expiry_date: userToCreate.idExpiryDate,
+      id_image_url: userToCreate.idImageUrl ?? null,
+      selfie_url: userToCreate.selfieUrl ?? null,
+      account_type: userToCreate.accountType,
+      currency: userToCreate.currency,
+      account_purpose: userToCreate.accountPurpose ?? null,
+      password: userToCreate.password,
+      transaction_pin: userToCreate.transactionPin,
+      role: userToCreate.role,
+      status: userToCreate.status,
+      isEmailVerified: userToCreate.isEmailVerified,
+      account_number: userToCreate.accountNumber,
+      customer_id: userToCreate.customerId,
+      balance: userToCreate.balance,
+    };
+
     console.log("Creating user with data:", JSON.stringify(userToCreate, null, 2));
 
-    const user = await storage.createUser(userToCreate);
+    const user = await adminStorage.createUser(dbPayload);
 
     // Generate OTP
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    await storage.createOtp(user.email, code);
+    await adminStorage.createOtp(user.email, code);
 
     try {
       await sendOtpEmail(user.email, code, "EMAIL_VERIFICATION");

@@ -387,16 +387,17 @@ var __turbopack_async_dependencies__ = __turbopack_handle_async_dependencies__([
 ;
 ;
 const { Pool } = __TURBOPACK__imported__module__$5b$externals$5d2f$pg__$5b$external$5d$__$28$pg$2c$__esm_import$2c$__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$pg$29$__["default"];
-if ("TURBOPACK compile-time truthy", 1) {
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-}
 if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL must be set. Did you forget to provision a database?");
 }
+// Configure SSL for Supabase
+const useSSL = process.env.DATABASE_URL.includes('supabase.co');
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false
+    ...useSSL && {
+        ssl: {
+            rejectUnauthorized: false
+        }
     }
 });
 const db = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$drizzle$2d$orm$2f$node$2d$postgres$2f$driver$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["drizzle"])(pool, {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/hooks/use-auth";
@@ -22,8 +22,13 @@ export default function AuthPage() {
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
   const [otpCode, setOtpCode] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (user) {
+      setLocation("/dashboard");
+    }
+  }, [user, setLocation]);
+
   if (user) {
-    setLocation("/dashboard");
     return null;
   }
 

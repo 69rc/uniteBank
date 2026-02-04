@@ -1,18 +1,18 @@
 import { NextRequest } from 'next/server';
 import { api } from '@shared/routes';
-import { storage } from '@server/storage';
+import { adminStorage } from '@server/storage';
 import { comparePasswords } from '../../utils/auth';
 import { createSessionId } from '@lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
     const input = api.auth.login.input.parse(await request.json());
-    const user = await storage.getUserByEmail(input.email);
+    const user = await adminStorage.getUserByEmail(input.email);
 
     if (!user || !(await comparePasswords(input.password, user.password))) {
       return Response.json({ message: "Invalid email or password" }, { status: 401 });
     }
-
+console.log(user);
     if (!user.isEmailVerified) {
       return Response.json({ message: "Email not verified" }, { status: 401 });
     }

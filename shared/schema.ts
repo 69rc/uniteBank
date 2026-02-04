@@ -39,7 +39,7 @@ export const users = pgTable("users", {
   // Status & Role
   role: text("role", { enum: ["USER", "ADMIN"] }).default("USER").notNull(),
   status: text("status", { enum: ["PENDING", "APPROVED", "REJECTED"] }).default("PENDING").notNull(),
-  isEmailVerified: boolean("is_email_verified").default(false).notNull(),
+  isEmailVerified: boolean("isEmailVerified").default(false).notNull(),
   
   // Generated fields
   accountNumber: varchar("account_number", { length: 20 }).unique(), 
@@ -52,7 +52,6 @@ export const otps = pgTable("otps", {
   id: serial("id").primaryKey(),
   email: text("email").notNull(),
   code: text("code").notNull(),
-  purpose: text("purpose").default("EMAIL_VERIFICATION").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
 });
 

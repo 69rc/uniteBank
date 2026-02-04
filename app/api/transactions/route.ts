@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { storage } from '@server/storage';
+import { publicStorage } from '@server/storage';
 import { getCurrentUserFromRequest, isAuthenticated } from '@lib/auth';
 
 export async function GET(request: NextRequest) {
@@ -18,6 +18,6 @@ export async function GET(request: NextRequest) {
       headers: { "Content-Type": "application/json" }
     });
   }
-  const txs = await storage.getTransactionsByUserId(user.id);
+  const txs = await publicStorage.getTransactionsByUserId(user.id);
   return Response.json(txs);
 }

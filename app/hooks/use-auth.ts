@@ -35,7 +35,8 @@ export function useAuth() {
     },
     onSuccess: (data) => {
       queryClient.setQueryData([api.auth.me.path], data);
-      toast({ title: "Welcome back!", description: `Logged in as ${data.firstName}` });
+      const displayName = data.firstName?.trim() || data.lastName?.trim() || data.email;
+      toast({ title: "Welcome back!", description: `Logged in as ${displayName}` });
     },
     onError: (error: Error) => {
       toast({ title: "Login Failed", description: error.message, variant: "destructive" });

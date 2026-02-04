@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { storage } from '@server/storage';
+import { adminStorage } from '@server/storage';
 import { isAdmin, getCurrentUserFromRequest } from '@lib/auth';
 
 // Helper function to validate admin access
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     });
   }
 
-  const user = await storage.updateUserStatus(userId, "REJECTED");
+  const user = await adminStorage.updateUserStatus(userId, "REJECTED");
   if (!user) {
     return new Response(JSON.stringify({ message: "User not found" }), {
       status: 404,

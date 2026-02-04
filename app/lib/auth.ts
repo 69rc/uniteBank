@@ -1,10 +1,14 @@
-import { storage } from '@server/storage';
+import { adminStorage } from '@server/storage';
 import { comparePasswords } from '../api/utils/auth';
 import { cookies } from 'next/headers';
 
 // Mock session storage - in production you might use Redis, DB, or JWT
 // Note: This in-memory storage is not suitable for serverless/production environments.
-const mockSessions = new Map();
+type SessionRecord = { userId: number; createdAt: Date };
+const globalForSessions = globalThis as typeof globalThis & {
+  __SESSION_STORE__?: Map<string, SessionRecord>;
+};
+const mockSessions = globalForSessions.__SESSION_STORE__ ?? (globalForSessions.__SESSION_STORE__ = new Map<string, SessionRecord>());
 
 // Function to check if user is authenticated
 export async function isAuthenticated(request: Request) {
@@ -36,7 +40,7 @@ export async function getCurrentUserFromRequest(request: Request) {
   }
 
   // In a real implementation, you would fetch user from your DB
-  const user = await storage.getUser(session.userId);
+  const user = await adminStorage.getUser(session.userId);
   return user;
 }
 
