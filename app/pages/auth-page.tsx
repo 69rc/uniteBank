@@ -109,9 +109,8 @@ export default function AuthPage() {
 
                 <TabsContent value="register">
                   <RegisterForm
-                    onSuccess={(email, otp) => {
+                    onSuccess={(email) => {
                       setRegisteredEmail(email);
-                      setOtpCode(otp ?? null);
                     }}
                   />
                 </TabsContent>
