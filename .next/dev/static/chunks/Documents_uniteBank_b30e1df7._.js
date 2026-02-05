@@ -2458,10 +2458,24 @@ const api = {
             method: 'POST',
             path: '/api/admin/transactions',
             input: __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$shared$2f$schema$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["insertTransactionSchema"].omit({
-                createdBy: true
-            }).extend({
-                userId: __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$zod$2f$lib$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["z"].coerce.number().int().min(1, "User is required"),
-                amount: __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$zod$2f$lib$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["z"].coerce.string()
+                createdBy: true,
+                userId: true
+            }) // Omit userId from original schema
+            .extend({
+                // Either userId or accountNumber must be provided
+                userId: __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$zod$2f$lib$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["z"].string().optional(),
+                accountNumber: __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$zod$2f$lib$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["z"].string().min(10, "Account number must be at least 10 digits").max(20, "Account number is too long").optional(),
+                amount: __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$zod$2f$lib$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["z"].string().min(1, "Amount is required").refine((val)=>{
+                    const num = Number(val);
+                    return !isNaN(num) && num >= 0.01;
+                }, {
+                    message: "Amount must be greater than 0"
+                })
+            }).refine((data)=>data.userId || data.accountNumber, {
+                message: "Either userId or accountNumber must be provided",
+                path: [
+                    "userId"
+                ]
             }),
             responses: {
                 201: __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$zod$2f$lib$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["z"].custom(),
@@ -2550,7 +2564,10 @@ function useAuth() {
                 });
                 if (!res.ok) {
                     if (res.status === 401) throw new Error("Invalid email or password");
-                    throw new Error("Login failed");
+                    const errorData = await res.json().catch({
+                        "useAuth.useMutation[loginMutation]": ()=>null
+                    }["useAuth.useMutation[loginMutation]"]);
+                    throw new Error(errorData?.message || "Login failed");
                 }
                 return await res.json();
             }
@@ -2623,10 +2640,10 @@ function useAuth() {
             }
         }["useAuth.useMutation[registerMutation]"],
         onSuccess: {
-            "useAuth.useMutation[registerMutation]": ()=>{
+            "useAuth.useMutation[registerMutation]": (res)=>{
                 toast({
-                    title: "Registration successful",
-                    description: "Please check your email for the verification code."
+                    title: "Application submitted",
+                    description: res.message
                 });
             }
         }["useAuth.useMutation[registerMutation]"],
@@ -2639,44 +2656,6 @@ function useAuth() {
                 });
             }
         }["useAuth.useMutation[registerMutation]"]
-    });
-    const verifyOtpMutation = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useMutation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMutation"])({
-        mutationFn: {
-            "useAuth.useMutation[verifyOtpMutation]": async (data)=>{
-                const res = await fetch(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$shared$2f$routes$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["api"].auth.verifyOtp.path, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(data)
-                });
-                if (!res.ok) {
-                    const errorData = await res.json();
-                    throw new Error(errorData.message || "Invalid OTP");
-                }
-                return await res.json();
-            }
-        }["useAuth.useMutation[verifyOtpMutation]"],
-        onSuccess: {
-            "useAuth.useMutation[verifyOtpMutation]": (data)=>{
-                queryClient.setQueryData([
-                    __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$shared$2f$routes$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["api"].auth.me.path
-                ], data.user);
-                toast({
-                    title: "Verified!",
-                    description: "Account created successfully."
-                });
-            }
-        }["useAuth.useMutation[verifyOtpMutation]"],
-        onError: {
-            "useAuth.useMutation[verifyOtpMutation]": (error)=>{
-                toast({
-                    title: "Verification Failed",
-                    description: error.message,
-                    variant: "destructive"
-                });
-            }
-        }["useAuth.useMutation[verifyOtpMutation]"]
     });
     const forgotPasswordMutation = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useMutation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMutation"])({
         mutationFn: {
@@ -2756,18 +2735,16 @@ function useAuth() {
         loginMutation,
         logoutMutation,
         registerMutation,
-        verifyOtpMutation,
         forgotPasswordMutation,
         resetPasswordMutation
     };
 }
-_s(useAuth, "iuCLNzKDKiO7o25RYcvJlcFBUSI=", false, function() {
+_s(useAuth, "SntydPfuPEH4WLBq89qEh+sGSvg=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$QueryClientProvider$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useQueryClient"],
         __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"],
         __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$wouter$2f$esm$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useLocation"],
         __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useQuery$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useQuery"],
-        __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useMutation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMutation"],
         __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useMutation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMutation"],
         __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useMutation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMutation"],
         __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useMutation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMutation"],
@@ -3163,12 +3140,8 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$ap
 var __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Documents/uniteBank/app/components/ui/card.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$tabs$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Documents/uniteBank/app/components/ui/tabs.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$landmark$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Landmark$3e$__ = __turbopack_context__.i("[project]/Documents/uniteBank/node_modules/lucide-react/dist/esm/icons/landmark.js [app-client] (ecmascript) <export default as Landmark>");
-var __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$right$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowRight$3e$__ = __turbopack_context__.i("[project]/Documents/uniteBank/node_modules/lucide-react/dist/esm/icons/arrow-right.js [app-client] (ecmascript) <export default as ArrowRight>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$loader$2d$circle$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Loader2$3e$__ = __turbopack_context__.i("[project]/Documents/uniteBank/node_modules/lucide-react/dist/esm/icons/loader-circle.js [app-client] (ecmascript) <export default as Loader2>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$check$2d$big$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__CheckCircle$3e$__ = __turbopack_context__.i("[project]/Documents/uniteBank/node_modules/lucide-react/dist/esm/icons/circle-check-big.js [app-client] (ecmascript) <export default as CheckCircle>");
-var __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$copy$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Copy$3e$__ = __turbopack_context__.i("[project]/Documents/uniteBank/node_modules/lucide-react/dist/esm/icons/copy.js [app-client] (ecmascript) <export default as Copy>");
-var __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$check$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Check$3e$__ = __turbopack_context__.i("[project]/Documents/uniteBank/node_modules/lucide-react/dist/esm/icons/check.js [app-client] (ecmascript) <export default as Check>");
-var __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Documents/uniteBank/app/hooks/use-toast.ts [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature(), _s1 = __turbopack_context__.k.signature(), _s2 = __turbopack_context__.k.signature(), _s3 = __turbopack_context__.k.signature();
 "use client";
@@ -3184,14 +3157,12 @@ var _s = __turbopack_context__.k.signature(), _s1 = __turbopack_context__.k.sign
 ;
 ;
 ;
-;
 function AuthPage() {
     _s();
     const [activeTab, setActiveTab] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("login");
-    const { loginMutation, registerMutation, verifyOtpMutation, user } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$hooks$2f$use$2d$auth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"])();
+    const { loginMutation, registerMutation, user } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$hooks$2f$use$2d$auth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"])();
     const [, setLocation] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$wouter$2f$esm$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useLocation"])();
     const [registeredEmail, setRegisteredEmail] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
-    const [otpCode, setOtpCode] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "AuthPage.useEffect": ()=>{
             if (user) {
@@ -3217,14 +3188,14 @@ function AuthPage() {
                             className: "absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-yellow-500/20 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"
                         }, void 0, false, {
                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                            lineNumber: 41,
+                            lineNumber: 39,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: "absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-blue-500/20 to-transparent rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"
                         }, void 0, false, {
                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                            lineNumber: 42,
+                            lineNumber: 40,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3239,12 +3210,12 @@ function AuthPage() {
                                                 className: "w-8 h-8 text-slate-900"
                                             }, void 0, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 48,
+                                                lineNumber: 46,
                                                 columnNumber: 17
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                            lineNumber: 47,
+                                            lineNumber: 45,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3256,19 +3227,19 @@ function AuthPage() {
                                                     children: "Horizon"
                                                 }, void 0, false, {
                                                     fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                    lineNumber: 51,
+                                                    lineNumber: 49,
                                                     columnNumber: 23
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                            lineNumber: 50,
+                                            lineNumber: 48,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                    lineNumber: 46,
+                                    lineNumber: 44,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
@@ -3277,7 +3248,7 @@ function AuthPage() {
                                         "Banking for the ",
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("br", {}, void 0, false, {
                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                            lineNumber: 56,
+                                            lineNumber: 54,
                                             columnNumber: 31
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3285,13 +3256,13 @@ function AuthPage() {
                                             children: "Modern Era"
                                         }, void 0, false, {
                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                            lineNumber: 57,
+                                            lineNumber: 55,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                    lineNumber: 55,
+                                    lineNumber: 53,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3299,13 +3270,13 @@ function AuthPage() {
                                     children: "Experience secure, seamless, and sophisticated financial management designed for your lifestyle."
                                 }, void 0, false, {
                                     fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                    lineNumber: 61,
+                                    lineNumber: 59,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                            lineNumber: 45,
+                            lineNumber: 43,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3325,36 +3296,36 @@ function AuthPage() {
                                                 children: "User"
                                             }, i, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 70,
+                                                lineNumber: 68,
                                                 columnNumber: 19
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 68,
+                                        lineNumber: 66,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                         children: "Join 10,000+ satisfied customers today."
                                     }, void 0, false, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 78,
+                                        lineNumber: 76,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                lineNumber: 67,
+                                lineNumber: 65,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                            lineNumber: 66,
+                            lineNumber: 64,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                    lineNumber: 39,
+                    lineNumber: 37,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3371,12 +3342,12 @@ function AuthPage() {
                                             className: "w-6 h-6 text-slate-900"
                                         }, void 0, false, {
                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                            lineNumber: 88,
+                                            lineNumber: 86,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 87,
+                                        lineNumber: 85,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3386,7 +3357,7 @@ function AuthPage() {
                                                 children: "UnitedHorizon"
                                             }, void 0, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 91,
+                                                lineNumber: 89,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3394,28 +3365,27 @@ function AuthPage() {
                                                 children: "Secure banking anywhere"
                                             }, void 0, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 92,
+                                                lineNumber: 90,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 90,
+                                        lineNumber: 88,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                lineNumber: 86,
+                                lineNumber: 84,
                                 columnNumber: 13
                             }, this),
-                            registeredEmail ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(OtpForm, {
+                            registeredEmail ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(PostRegistrationNotice, {
                                 email: registeredEmail,
-                                otpCode: otpCode,
-                                onVerify: ()=>setLocation("/dashboard")
+                                onBack: ()=>setRegisteredEmail(null)
                             }, void 0, false, {
                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                lineNumber: 96,
+                                lineNumber: 94,
                                 columnNumber: 15
                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$tabs$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Tabs"], {
                                 value: activeTab,
@@ -3431,7 +3401,7 @@ function AuthPage() {
                                                 children: "Login"
                                             }, void 0, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 100,
+                                                lineNumber: 98,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$tabs$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TabsTrigger"], {
@@ -3440,25 +3410,25 @@ function AuthPage() {
                                                 children: "Register"
                                             }, void 0, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 103,
+                                                lineNumber: 101,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 99,
+                                        lineNumber: 97,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$tabs$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TabsContent"], {
                                         value: "login",
                                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(LoginForm, {}, void 0, false, {
                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                            lineNumber: 109,
+                                            lineNumber: 107,
                                             columnNumber: 19
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 108,
+                                        lineNumber: 106,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$tabs$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TabsContent"], {
@@ -3470,44 +3440,44 @@ function AuthPage() {
                                             }
                                         }, void 0, false, {
                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                            lineNumber: 113,
+                                            lineNumber: 111,
                                             columnNumber: 19
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 112,
+                                        lineNumber: 110,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                lineNumber: 98,
+                                lineNumber: 96,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                        lineNumber: 85,
+                        lineNumber: 83,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                    lineNumber: 84,
+                    lineNumber: 82,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-            lineNumber: 37,
+            lineNumber: 35,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-        lineNumber: 36,
+        lineNumber: 34,
         columnNumber: 5
     }, this);
 }
-_s(AuthPage, "NO4EBoj+PDHAH9e/1SSLppq1KjI=", false, function() {
+_s(AuthPage, "qvT2xnZxBYpOP3Lun9nUd4KETPU=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$hooks$2f$use$2d$auth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"],
         __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$wouter$2f$esm$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useLocation"]
@@ -3534,20 +3504,20 @@ function LoginForm() {
                         children: "Welcome Back"
                     }, void 0, false, {
                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                        lineNumber: 139,
+                        lineNumber: 137,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardDescription"], {
                         children: "Enter your credentials to access your account."
                     }, void 0, false, {
                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                        lineNumber: 140,
+                        lineNumber: 138,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                lineNumber: 138,
+                lineNumber: 136,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -3566,7 +3536,7 @@ function LoginForm() {
                                                 children: "Email"
                                             }, void 0, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 150,
+                                                lineNumber: 148,
                                                 columnNumber: 19
                                             }, void 0),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -3575,28 +3545,28 @@ function LoginForm() {
                                                     ...field
                                                 }, void 0, false, {
                                                     fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                    lineNumber: 152,
+                                                    lineNumber: 150,
                                                     columnNumber: 21
                                                 }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 151,
+                                                lineNumber: 149,
                                                 columnNumber: 19
                                             }, void 0),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 154,
+                                                lineNumber: 152,
                                                 columnNumber: 19
                                             }, void 0)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 149,
+                                        lineNumber: 147,
                                         columnNumber: 17
                                     }, void 0)
                             }, void 0, false, {
                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                lineNumber: 145,
+                                lineNumber: 143,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormField"], {
@@ -3608,7 +3578,7 @@ function LoginForm() {
                                                 children: "Password"
                                             }, void 0, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 163,
+                                                lineNumber: 161,
                                                 columnNumber: 19
                                             }, void 0),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -3617,28 +3587,28 @@ function LoginForm() {
                                                     ...field
                                                 }, void 0, false, {
                                                     fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                    lineNumber: 165,
+                                                    lineNumber: 163,
                                                     columnNumber: 21
                                                 }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 164,
+                                                lineNumber: 162,
                                                 columnNumber: 19
                                             }, void 0),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 167,
+                                                lineNumber: 165,
                                                 columnNumber: 19
                                             }, void 0)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 162,
+                                        lineNumber: 160,
                                         columnNumber: 17
                                     }, void 0)
                             }, void 0, false, {
                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                lineNumber: 158,
+                                lineNumber: 156,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -3650,36 +3620,36 @@ function LoginForm() {
                                         className: "mr-2 h-4 w-4 animate-spin"
                                     }, void 0, false, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 172,
+                                        lineNumber: 170,
                                         columnNumber: 43
                                     }, this),
                                     "Sign In"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                lineNumber: 171,
+                                lineNumber: 169,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                        lineNumber: 144,
+                        lineNumber: 142,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                    lineNumber: 143,
+                    lineNumber: 141,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                lineNumber: 142,
+                lineNumber: 140,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-        lineNumber: 137,
+        lineNumber: 135,
         columnNumber: 5
     }, this);
 }
@@ -3729,20 +3699,20 @@ function RegisterForm({ onSuccess }) {
                         children: "Create Account"
                     }, void 0, false, {
                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                        lineNumber: 215,
+                        lineNumber: 213,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardDescription"], {
                         children: "Complete your banking application form."
                     }, void 0, false, {
                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                        lineNumber: 216,
+                        lineNumber: 214,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                lineNumber: 214,
+                lineNumber: 212,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -3750,7 +3720,7 @@ function RegisterForm({ onSuccess }) {
                     ...form,
                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
                         onSubmit: form.handleSubmit((d)=>registerMutation.mutate(d, {
-                                onSuccess: (res)=>onSuccess(res.email, res.otp ?? null)
+                                onSuccess: (res)=>onSuccess(res.email)
                             })),
                         className: "space-y-6",
                         children: [
@@ -3762,7 +3732,7 @@ function RegisterForm({ onSuccess }) {
                                         children: "Personal Information"
                                     }, void 0, false, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 230,
+                                        lineNumber: 228,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3777,7 +3747,7 @@ function RegisterForm({ onSuccess }) {
                                                                 children: "First Name *"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 240,
+                                                                lineNumber: 238,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -3785,28 +3755,28 @@ function RegisterForm({ onSuccess }) {
                                                                     ...field
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                    lineNumber: 242,
+                                                                    lineNumber: 240,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 241,
+                                                                lineNumber: 239,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 244,
+                                                                lineNumber: 242,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 239,
+                                                        lineNumber: 237,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 235,
+                                                lineNumber: 233,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormField"], {
@@ -3818,7 +3788,7 @@ function RegisterForm({ onSuccess }) {
                                                                 children: "Last Name *"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 253,
+                                                                lineNumber: 251,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -3826,34 +3796,34 @@ function RegisterForm({ onSuccess }) {
                                                                     ...field
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                    lineNumber: 255,
+                                                                    lineNumber: 253,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 254,
+                                                                lineNumber: 252,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 257,
+                                                                lineNumber: 255,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 252,
+                                                        lineNumber: 250,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 248,
+                                                lineNumber: 246,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 234,
+                                        lineNumber: 232,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormField"], {
@@ -3870,7 +3840,7 @@ function RegisterForm({ onSuccess }) {
                                                         children: "Other Name (Optional)"
                                                     }, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 274,
+                                                        lineNumber: 272,
                                                         columnNumber: 21
                                                     }, void 0),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -3880,29 +3850,29 @@ function RegisterForm({ onSuccess }) {
                                                             onChange: handleChange
                                                         }, void 0, false, {
                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                            lineNumber: 276,
+                                                            lineNumber: 274,
                                                             columnNumber: 23
                                                         }, void 0)
                                                     }, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 275,
+                                                        lineNumber: 273,
                                                         columnNumber: 21
                                                     }, void 0),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 282,
+                                                        lineNumber: 280,
                                                         columnNumber: 21
                                                     }, void 0)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 273,
+                                                lineNumber: 271,
                                                 columnNumber: 19
                                             }, void 0);
                                         }
                                     }, void 0, false, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 263,
+                                        lineNumber: 261,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3917,7 +3887,7 @@ function RegisterForm({ onSuccess }) {
                                                                 children: "Date of Birth *"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 293,
+                                                                lineNumber: 291,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -3926,28 +3896,28 @@ function RegisterForm({ onSuccess }) {
                                                                     ...field
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                    lineNumber: 295,
+                                                                    lineNumber: 293,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 294,
+                                                                lineNumber: 292,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 297,
+                                                                lineNumber: 295,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 292,
+                                                        lineNumber: 290,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 288,
+                                                lineNumber: 286,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormField"], {
@@ -3959,7 +3929,7 @@ function RegisterForm({ onSuccess }) {
                                                                 children: "Gender *"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 306,
+                                                                lineNumber: 304,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -3972,7 +3942,7 @@ function RegisterForm({ onSuccess }) {
                                                                             children: "Select Gender"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                            lineNumber: 312,
+                                                                            lineNumber: 310,
                                                                             columnNumber: 27
                                                                         }, void 0),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -3980,7 +3950,7 @@ function RegisterForm({ onSuccess }) {
                                                                             children: "Male"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                            lineNumber: 313,
+                                                                            lineNumber: 311,
                                                                             columnNumber: 27
                                                                         }, void 0),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -3988,7 +3958,7 @@ function RegisterForm({ onSuccess }) {
                                                                             children: "Female"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                            lineNumber: 314,
+                                                                            lineNumber: 312,
                                                                             columnNumber: 27
                                                                         }, void 0),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -3996,40 +3966,40 @@ function RegisterForm({ onSuccess }) {
                                                                             children: "Other"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                            lineNumber: 315,
+                                                                            lineNumber: 313,
                                                                             columnNumber: 27
                                                                         }, void 0)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                    lineNumber: 308,
+                                                                    lineNumber: 306,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 307,
+                                                                lineNumber: 305,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 318,
+                                                                lineNumber: 316,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 305,
+                                                        lineNumber: 303,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 301,
+                                                lineNumber: 299,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 287,
+                                        lineNumber: 285,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormField"], {
@@ -4041,7 +4011,7 @@ function RegisterForm({ onSuccess }) {
                                                         children: "Nationality *"
                                                     }, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 329,
+                                                        lineNumber: 327,
                                                         columnNumber: 21
                                                     }, void 0),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -4050,34 +4020,34 @@ function RegisterForm({ onSuccess }) {
                                                             placeholder: "e.g., Nigerian, American"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                            lineNumber: 331,
+                                                            lineNumber: 329,
                                                             columnNumber: 23
                                                         }, void 0)
                                                     }, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 330,
+                                                        lineNumber: 328,
                                                         columnNumber: 21
                                                     }, void 0),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 333,
+                                                        lineNumber: 331,
                                                         columnNumber: 21
                                                     }, void 0)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 328,
+                                                lineNumber: 326,
                                                 columnNumber: 19
                                             }, void 0)
                                     }, void 0, false, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 324,
+                                        lineNumber: 322,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                lineNumber: 229,
+                                lineNumber: 227,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4088,7 +4058,7 @@ function RegisterForm({ onSuccess }) {
                                         children: "Contact Information"
                                     }, void 0, false, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 341,
+                                        lineNumber: 339,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormField"], {
@@ -4100,7 +4070,7 @@ function RegisterForm({ onSuccess }) {
                                                         children: "Email Address *"
                                                     }, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 348,
+                                                        lineNumber: 346,
                                                         columnNumber: 21
                                                     }, void 0),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -4110,28 +4080,28 @@ function RegisterForm({ onSuccess }) {
                                                             placeholder: "john@example.com"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                            lineNumber: 350,
+                                                            lineNumber: 348,
                                                             columnNumber: 23
                                                         }, void 0)
                                                     }, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 349,
+                                                        lineNumber: 347,
                                                         columnNumber: 21
                                                     }, void 0),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 352,
+                                                        lineNumber: 350,
                                                         columnNumber: 21
                                                     }, void 0)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 347,
+                                                lineNumber: 345,
                                                 columnNumber: 19
                                             }, void 0)
                                     }, void 0, false, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 343,
+                                        lineNumber: 341,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormField"], {
@@ -4143,7 +4113,7 @@ function RegisterForm({ onSuccess }) {
                                                         children: "Phone Number *"
                                                     }, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 362,
+                                                        lineNumber: 360,
                                                         columnNumber: 21
                                                     }, void 0),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -4153,28 +4123,28 @@ function RegisterForm({ onSuccess }) {
                                                             placeholder: "+1234567890"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                            lineNumber: 364,
+                                                            lineNumber: 362,
                                                             columnNumber: 23
                                                         }, void 0)
                                                     }, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 363,
+                                                        lineNumber: 361,
                                                         columnNumber: 21
                                                     }, void 0),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 366,
+                                                        lineNumber: 364,
                                                         columnNumber: 21
                                                     }, void 0)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 361,
+                                                lineNumber: 359,
                                                 columnNumber: 19
                                             }, void 0)
                                     }, void 0, false, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 357,
+                                        lineNumber: 355,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormField"], {
@@ -4186,7 +4156,7 @@ function RegisterForm({ onSuccess }) {
                                                         children: "Street Address *"
                                                     }, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 376,
+                                                        lineNumber: 374,
                                                         columnNumber: 21
                                                     }, void 0),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -4195,28 +4165,28 @@ function RegisterForm({ onSuccess }) {
                                                             placeholder: "123 Main Street"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                            lineNumber: 378,
+                                                            lineNumber: 376,
                                                             columnNumber: 23
                                                         }, void 0)
                                                     }, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 377,
+                                                        lineNumber: 375,
                                                         columnNumber: 21
                                                     }, void 0),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 380,
+                                                        lineNumber: 378,
                                                         columnNumber: 21
                                                     }, void 0)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 375,
+                                                lineNumber: 373,
                                                 columnNumber: 19
                                             }, void 0)
                                     }, void 0, false, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 371,
+                                        lineNumber: 369,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4231,7 +4201,7 @@ function RegisterForm({ onSuccess }) {
                                                                 children: "City *"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 391,
+                                                                lineNumber: 389,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -4239,28 +4209,28 @@ function RegisterForm({ onSuccess }) {
                                                                     ...field
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                    lineNumber: 393,
+                                                                    lineNumber: 391,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 392,
+                                                                lineNumber: 390,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 395,
+                                                                lineNumber: 393,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 390,
+                                                        lineNumber: 388,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 386,
+                                                lineNumber: 384,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormField"], {
@@ -4272,7 +4242,7 @@ function RegisterForm({ onSuccess }) {
                                                                 children: "State/Province *"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 404,
+                                                                lineNumber: 402,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -4280,34 +4250,34 @@ function RegisterForm({ onSuccess }) {
                                                                     ...field
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                    lineNumber: 406,
+                                                                    lineNumber: 404,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 405,
+                                                                lineNumber: 403,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 408,
+                                                                lineNumber: 406,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 403,
+                                                        lineNumber: 401,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 399,
+                                                lineNumber: 397,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 385,
+                                        lineNumber: 383,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4322,7 +4292,7 @@ function RegisterForm({ onSuccess }) {
                                                                 children: "Country *"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 420,
+                                                                lineNumber: 418,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -4330,28 +4300,28 @@ function RegisterForm({ onSuccess }) {
                                                                     ...field
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                    lineNumber: 422,
+                                                                    lineNumber: 420,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 421,
+                                                                lineNumber: 419,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 424,
+                                                                lineNumber: 422,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 419,
+                                                        lineNumber: 417,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 415,
+                                                lineNumber: 413,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormField"], {
@@ -4363,7 +4333,7 @@ function RegisterForm({ onSuccess }) {
                                                                 children: "ZIP/Postal Code *"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 433,
+                                                                lineNumber: 431,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -4371,40 +4341,40 @@ function RegisterForm({ onSuccess }) {
                                                                     ...field
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                    lineNumber: 435,
+                                                                    lineNumber: 433,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 434,
+                                                                lineNumber: 432,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 437,
+                                                                lineNumber: 435,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 432,
+                                                        lineNumber: 430,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 428,
+                                                lineNumber: 426,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 414,
+                                        lineNumber: 412,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                lineNumber: 340,
+                                lineNumber: 338,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4415,7 +4385,7 @@ function RegisterForm({ onSuccess }) {
                                         children: "Identification"
                                     }, void 0, false, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 446,
+                                        lineNumber: 444,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4430,7 +4400,7 @@ function RegisterForm({ onSuccess }) {
                                                                 children: "ID Type *"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 454,
+                                                                lineNumber: 452,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -4443,7 +4413,7 @@ function RegisterForm({ onSuccess }) {
                                                                             children: "Select ID Type"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                            lineNumber: 460,
+                                                                            lineNumber: 458,
                                                                             columnNumber: 27
                                                                         }, void 0),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -4451,7 +4421,7 @@ function RegisterForm({ onSuccess }) {
                                                                             children: "National ID"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                            lineNumber: 461,
+                                                                            lineNumber: 459,
                                                                             columnNumber: 27
                                                                         }, void 0),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -4459,7 +4429,7 @@ function RegisterForm({ onSuccess }) {
                                                                             children: "Passport"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                            lineNumber: 462,
+                                                                            lineNumber: 460,
                                                                             columnNumber: 27
                                                                         }, void 0),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -4467,7 +4437,7 @@ function RegisterForm({ onSuccess }) {
                                                                             children: "Driver License"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                            lineNumber: 463,
+                                                                            lineNumber: 461,
                                                                             columnNumber: 27
                                                                         }, void 0),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -4475,34 +4445,34 @@ function RegisterForm({ onSuccess }) {
                                                                             children: "Voter ID"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                            lineNumber: 464,
+                                                                            lineNumber: 462,
                                                                             columnNumber: 27
                                                                         }, void 0)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                    lineNumber: 456,
+                                                                    lineNumber: 454,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 455,
+                                                                lineNumber: 453,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 467,
+                                                                lineNumber: 465,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 453,
+                                                        lineNumber: 451,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 449,
+                                                lineNumber: 447,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormField"], {
@@ -4514,7 +4484,7 @@ function RegisterForm({ onSuccess }) {
                                                                 children: "ID Number *"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 476,
+                                                                lineNumber: 474,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -4522,34 +4492,34 @@ function RegisterForm({ onSuccess }) {
                                                                     ...field
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                    lineNumber: 478,
+                                                                    lineNumber: 476,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 477,
+                                                                lineNumber: 475,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 480,
+                                                                lineNumber: 478,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 475,
+                                                        lineNumber: 473,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 471,
+                                                lineNumber: 469,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 448,
+                                        lineNumber: 446,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormField"], {
@@ -4561,7 +4531,7 @@ function RegisterForm({ onSuccess }) {
                                                         children: "ID Expiry Date *"
                                                     }, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 491,
+                                                        lineNumber: 489,
                                                         columnNumber: 21
                                                     }, void 0),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -4570,34 +4540,34 @@ function RegisterForm({ onSuccess }) {
                                                             ...field
                                                         }, void 0, false, {
                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                            lineNumber: 493,
+                                                            lineNumber: 491,
                                                             columnNumber: 23
                                                         }, void 0)
                                                     }, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 492,
+                                                        lineNumber: 490,
                                                         columnNumber: 21
                                                     }, void 0),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 495,
+                                                        lineNumber: 493,
                                                         columnNumber: 21
                                                     }, void 0)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 490,
+                                                lineNumber: 488,
                                                 columnNumber: 19
                                             }, void 0)
                                     }, void 0, false, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 486,
+                                        lineNumber: 484,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                lineNumber: 445,
+                                lineNumber: 443,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4608,7 +4578,7 @@ function RegisterForm({ onSuccess }) {
                                         children: "Account Information"
                                     }, void 0, false, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 503,
+                                        lineNumber: 501,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4623,7 +4593,7 @@ function RegisterForm({ onSuccess }) {
                                                                 children: "Account Type *"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 511,
+                                                                lineNumber: 509,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -4636,7 +4606,7 @@ function RegisterForm({ onSuccess }) {
                                                                             children: "Savings Account"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                            lineNumber: 517,
+                                                                            lineNumber: 515,
                                                                             columnNumber: 27
                                                                         }, void 0),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -4644,7 +4614,7 @@ function RegisterForm({ onSuccess }) {
                                                                             children: "Current Account"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                            lineNumber: 518,
+                                                                            lineNumber: 516,
                                                                             columnNumber: 27
                                                                         }, void 0),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -4652,34 +4622,34 @@ function RegisterForm({ onSuccess }) {
                                                                             children: "Checking Account"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                            lineNumber: 519,
+                                                                            lineNumber: 517,
                                                                             columnNumber: 27
                                                                         }, void 0)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                    lineNumber: 513,
+                                                                    lineNumber: 511,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 512,
+                                                                lineNumber: 510,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 522,
+                                                                lineNumber: 520,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 510,
+                                                        lineNumber: 508,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 506,
+                                                lineNumber: 504,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormField"], {
@@ -4691,7 +4661,7 @@ function RegisterForm({ onSuccess }) {
                                                                 children: "Currency *"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 531,
+                                                                lineNumber: 529,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -4704,7 +4674,7 @@ function RegisterForm({ onSuccess }) {
                                                                             children: "USD - US Dollar"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                            lineNumber: 537,
+                                                                            lineNumber: 535,
                                                                             columnNumber: 27
                                                                         }, void 0),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -4712,7 +4682,7 @@ function RegisterForm({ onSuccess }) {
                                                                             children: "NGN - Nigerian Naira"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                            lineNumber: 538,
+                                                                            lineNumber: 536,
                                                                             columnNumber: 27
                                                                         }, void 0),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -4720,7 +4690,7 @@ function RegisterForm({ onSuccess }) {
                                                                             children: "EUR - Euro"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                            lineNumber: 539,
+                                                                            lineNumber: 537,
                                                                             columnNumber: 27
                                                                         }, void 0),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -4728,40 +4698,40 @@ function RegisterForm({ onSuccess }) {
                                                                             children: "GBP - British Pound"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                            lineNumber: 540,
+                                                                            lineNumber: 538,
                                                                             columnNumber: 27
                                                                         }, void 0)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                    lineNumber: 533,
+                                                                    lineNumber: 531,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 532,
+                                                                lineNumber: 530,
                                                                 columnNumber: 23
                                                             }, void 0),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                                lineNumber: 543,
+                                                                lineNumber: 541,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 530,
+                                                        lineNumber: 528,
                                                         columnNumber: 21
                                                     }, void 0)
                                             }, void 0, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 526,
+                                                lineNumber: 524,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 505,
+                                        lineNumber: 503,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormField"], {
@@ -4778,7 +4748,7 @@ function RegisterForm({ onSuccess }) {
                                                         children: "Account Purpose (Optional)"
                                                     }, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 560,
+                                                        lineNumber: 558,
                                                         columnNumber: 23
                                                     }, void 0),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -4789,35 +4759,35 @@ function RegisterForm({ onSuccess }) {
                                                             onChange: handleChange
                                                         }, void 0, false, {
                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                            lineNumber: 562,
+                                                            lineNumber: 560,
                                                             columnNumber: 25
                                                         }, void 0)
                                                     }, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 561,
+                                                        lineNumber: 559,
                                                         columnNumber: 23
                                                     }, void 0),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 569,
+                                                        lineNumber: 567,
                                                         columnNumber: 23
                                                     }, void 0)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 559,
+                                                lineNumber: 557,
                                                 columnNumber: 21
                                             }, void 0);
                                         }
                                     }, void 0, false, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 549,
+                                        lineNumber: 547,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                lineNumber: 502,
+                                lineNumber: 500,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4828,7 +4798,7 @@ function RegisterForm({ onSuccess }) {
                                         children: "Security"
                                     }, void 0, false, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 578,
+                                        lineNumber: 576,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormField"], {
@@ -4840,7 +4810,7 @@ function RegisterForm({ onSuccess }) {
                                                         children: "Password *"
                                                     }, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 585,
+                                                        lineNumber: 583,
                                                         columnNumber: 21
                                                     }, void 0),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -4850,28 +4820,28 @@ function RegisterForm({ onSuccess }) {
                                                             placeholder: "Minimum 8 characters"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                            lineNumber: 587,
+                                                            lineNumber: 585,
                                                             columnNumber: 23
                                                         }, void 0)
                                                     }, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 586,
+                                                        lineNumber: 584,
                                                         columnNumber: 21
                                                     }, void 0),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 589,
+                                                        lineNumber: 587,
                                                         columnNumber: 21
                                                     }, void 0)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 584,
+                                                lineNumber: 582,
                                                 columnNumber: 19
                                             }, void 0)
                                     }, void 0, false, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 580,
+                                        lineNumber: 578,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormField"], {
@@ -4883,7 +4853,7 @@ function RegisterForm({ onSuccess }) {
                                                         children: "Transaction PIN *"
                                                     }, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 599,
+                                                        lineNumber: 597,
                                                         columnNumber: 21
                                                     }, void 0),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -4894,34 +4864,34 @@ function RegisterForm({ onSuccess }) {
                                                             maxLength: 6
                                                         }, void 0, false, {
                                                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                            lineNumber: 601,
+                                                            lineNumber: 599,
                                                             columnNumber: 23
                                                         }, void 0)
                                                     }, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 600,
+                                                        lineNumber: 598,
                                                         columnNumber: 21
                                                     }, void 0),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 603,
+                                                        lineNumber: 601,
                                                         columnNumber: 21
                                                     }, void 0)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                lineNumber: 598,
+                                                lineNumber: 596,
                                                 columnNumber: 19
                                             }, void 0)
                                     }, void 0, false, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 594,
+                                        lineNumber: 592,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                lineNumber: 577,
+                                lineNumber: 575,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -4933,36 +4903,36 @@ function RegisterForm({ onSuccess }) {
                                         className: "mr-2 h-4 w-4 animate-spin"
                                     }, void 0, false, {
                                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 610,
+                                        lineNumber: 608,
                                         columnNumber: 46
                                     }, this),
                                     "Create Account"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                lineNumber: 609,
+                                lineNumber: 607,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                        lineNumber: 220,
+                        lineNumber: 218,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                    lineNumber: 219,
+                    lineNumber: 217,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                lineNumber: 218,
+                lineNumber: 216,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-        lineNumber: 213,
+        lineNumber: 211,
         columnNumber: 5
     }, this);
 }
@@ -4973,257 +4943,121 @@ _s2(RegisterForm, "2+jUCi57b+cG8X3A+MWxXjTBoE0=", false, function() {
     ];
 });
 _c2 = RegisterForm;
-function OtpForm({ email, otpCode, onVerify }) {
+function PostRegistrationNotice({ email, onBack }) {
     _s3();
-    const { verifyOtpMutation } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$hooks$2f$use$2d$auth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"])();
-    const { toast } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"])();
-    const [copied, setCopied] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
-    const form = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$react$2d$hook$2d$form$2f$dist$2f$index$2e$esm$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useForm"])({
-        resolver: (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f40$hookform$2f$resolvers$2f$zod$2f$dist$2f$zod$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["zodResolver"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$shared$2f$schema$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["otpSchema"]),
-        defaultValues: {
-            email,
-            code: ""
-        }
-    });
-    const copyToClipboard = async ()=>{
-        if (otpCode) {
-            await navigator.clipboard.writeText(otpCode);
-            setCopied(true);
-            toast({
-                title: "Copied!",
-                description: "OTP code copied to clipboard"
-            });
-            setTimeout(()=>setCopied(false), 2000);
-        }
-    };
+    const [, setLocation] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$wouter$2f$esm$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useLocation"])();
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
         className: "border-none shadow-xl shadow-slate-200/60 animate-in fade-in slide-in-from-right-4",
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardHeader"], {
-                className: "text-center",
+                className: "text-center space-y-4",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4",
+                        className: "w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto",
                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$check$2d$big$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__CheckCircle$3e$__["CheckCircle"], {
-                            className: "w-6 h-6 text-green-600"
+                            className: "w-6 h-6 text-yellow-600"
                         }, void 0, false, {
                             fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                            lineNumber: 643,
+                            lineNumber: 625,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                        lineNumber: 642,
+                        lineNumber: 624,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardTitle"], {
                         className: "font-display text-2xl",
-                        children: "Verify Email"
+                        children: "Application Received"
                     }, void 0, false, {
                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                        lineNumber: 645,
+                        lineNumber: 627,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardDescription"], {
                         children: [
-                            "Enter the 6-digit verification code for ",
+                            "Thanks for registering, ",
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                 className: "font-medium text-slate-900",
                                 children: email
                             }, void 0, false, {
                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                lineNumber: 647,
-                                columnNumber: 51
+                                lineNumber: 629,
+                                columnNumber: 35
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                        lineNumber: 646,
+                        lineNumber: 628,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                lineNumber: 641,
+                lineNumber: 623,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
+                className: "space-y-4",
                 children: [
-                    otpCode && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg",
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                        className: "text-sm text-slate-600 text-center leading-relaxed",
+                        children: "Our compliance team is reviewing your submission. You will receive an email once your account has been approved. You can close this window or return to the login page."
+                    }, void 0, false, {
+                        fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
+                        lineNumber: 633,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "grid gap-3 sm:grid-cols-2",
                         children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                className: "text-sm text-blue-800 mb-2 font-medium",
-                                children: "Your verification code:"
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
+                                variant: "outline",
+                                onClick: onBack,
+                                children: "Edit Application"
                             }, void 0, false, {
                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                lineNumber: 654,
-                                columnNumber: 13
+                                lineNumber: 638,
+                                columnNumber: 11
                             }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "flex flex-col sm:flex-row items-center justify-center gap-2",
-                                children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        className: "text-3xl font-mono font-bold text-blue-900 tracking-[0.3em] bg-white px-4 py-2 rounded border-2 border-blue-300",
-                                        children: otpCode
-                                    }, void 0, false, {
-                                        fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 656,
-                                        columnNumber: 15
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
-                                        type: "button",
-                                        variant: "outline",
-                                        size: "sm",
-                                        onClick: copyToClipboard,
-                                        className: "h-12 px-3",
-                                        children: copied ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$check$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Check$3e$__["Check"], {
-                                            className: "w-4 h-4 text-green-600"
-                                        }, void 0, false, {
-                                            fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                            lineNumber: 666,
-                                            columnNumber: 27
-                                        }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$copy$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Copy$3e$__["Copy"], {
-                                            className: "w-4 h-4"
-                                        }, void 0, false, {
-                                            fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                            lineNumber: 666,
-                                            columnNumber: 74
-                                        }, this)
-                                    }, void 0, false, {
-                                        fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                        lineNumber: 659,
-                                        columnNumber: 15
-                                    }, this)
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                lineNumber: 655,
-                                columnNumber: 13
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                className: "text-xs text-blue-600 mt-2 text-center",
-                                children: "Click the copy button or enter the code below to verify your account"
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
+                                onClick: ()=>setLocation("/auth"),
+                                children: "Back to Login"
                             }, void 0, false, {
                                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                lineNumber: 669,
-                                columnNumber: 13
+                                lineNumber: 641,
+                                columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                        lineNumber: 653,
-                        columnNumber: 11
-                    }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Form"], {
-                        ...form,
-                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
-                            onSubmit: form.handleSubmit((d)=>verifyOtpMutation.mutate(d, {
-                                    onSuccess: onVerify
-                                })),
-                            className: "space-y-6",
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormField"], {
-                                    control: form.control,
-                                    name: "code",
-                                    render: ({ field })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormItem"], {
-                                            children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormLabel"], {
-                                                    children: "Enter Verification Code"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                    lineNumber: 682,
-                                                    columnNumber: 19
-                                                }, void 0),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
-                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
-                                                        ...field,
-                                                        className: "text-center text-2xl tracking-[0.5em] font-mono h-14",
-                                                        maxLength: 6,
-                                                        placeholder: "000000"
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                        lineNumber: 684,
-                                                        columnNumber: 21
-                                                    }, void 0)
-                                                }, void 0, false, {
-                                                    fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                    lineNumber: 683,
-                                                    columnNumber: 19
-                                                }, void 0),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
-                                                    fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                                    lineNumber: 691,
-                                                    columnNumber: 19
-                                                }, void 0)
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                            lineNumber: 681,
-                                            columnNumber: 17
-                                        }, void 0)
-                                }, void 0, false, {
-                                    fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                    lineNumber: 677,
-                                    columnNumber: 13
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
-                                    type: "submit",
-                                    className: "w-full",
-                                    disabled: verifyOtpMutation.isPending,
-                                    children: [
-                                        verifyOtpMutation.isPending ? "Verifying..." : "Verify & Continue",
-                                        " ",
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$right$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowRight$3e$__["ArrowRight"], {
-                                            className: "ml-2 w-4 h-4"
-                                        }, void 0, false, {
-                                            fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                            lineNumber: 696,
-                                            columnNumber: 84
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                                    lineNumber: 695,
-                                    columnNumber: 13
-                                }, this)
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                            lineNumber: 676,
-                            columnNumber: 11
-                        }, this)
-                    }, void 0, false, {
-                        fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                        lineNumber: 675,
+                        lineNumber: 637,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-                lineNumber: 650,
+                lineNumber: 632,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/Documents/uniteBank/app/pages/auth-page.tsx",
-        lineNumber: 640,
+        lineNumber: 622,
         columnNumber: 5
     }, this);
 }
-_s3(OtpForm, "Ft7icyb3nT5RmmUuVktGZLV6rKM=", false, function() {
+_s3(PostRegistrationNotice, "kuEs9bGb6wQTzkOxc/XisbWnnsg=", false, function() {
     return [
-        __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$hooks$2f$use$2d$auth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"],
-        __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"],
-        __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$react$2d$hook$2d$form$2f$dist$2f$index$2e$esm$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useForm"]
+        __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$wouter$2f$esm$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useLocation"]
     ];
 });
-_c3 = OtpForm;
+_c3 = PostRegistrationNotice;
 var _c, _c1, _c2, _c3;
 __turbopack_context__.k.register(_c, "AuthPage");
 __turbopack_context__.k.register(_c1, "LoginForm");
 __turbopack_context__.k.register(_c2, "RegisterForm");
-__turbopack_context__.k.register(_c3, "OtpForm");
+__turbopack_context__.k.register(_c3, "PostRegistrationNotice");
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
 }
@@ -7901,13 +7735,25 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 const formSchema = __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$zod$2f$lib$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["z"].object({
-    userId: __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$zod$2f$lib$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["z"].coerce.number().min(1, "User is required"),
-    amount: __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$zod$2f$lib$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["z"].coerce.number().min(0.01, "Amount must be greater than 0"),
+    // Either userId or accountNumber must be provided
+    userId: __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$zod$2f$lib$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["z"].string().optional(),
+    accountNumber: __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$zod$2f$lib$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["z"].string().min(10, "Account number must be at least 10 digits").max(20, "Account number is too long").optional(),
+    amount: __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$zod$2f$lib$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["z"].string().min(1, "Amount is required").refine((val)=>{
+        const num = Number(val);
+        return !isNaN(num) && num >= 0.01;
+    }, {
+        message: "Amount must be greater than 0"
+    }),
     type: __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$zod$2f$lib$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["z"].enum([
         "CREDIT",
         "DEBIT"
     ]),
     description: __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$zod$2f$lib$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["z"].string().min(3, "Description is required")
+}).refine((data)=>data.userId || data.accountNumber, {
+    message: "Either user or account number must be provided",
+    path: [
+        "userId"
+    ]
 });
 function CreateTransactionDialog() {
     _s();
@@ -7918,17 +7764,27 @@ function CreateTransactionDialog() {
         resolver: (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f40$hookform$2f$resolvers$2f$zod$2f$dist$2f$zod$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["zodResolver"])(formSchema),
         defaultValues: {
             userId: undefined,
+            accountNumber: undefined,
             type: "CREDIT",
             description: "",
-            amount: 0
+            amount: ""
         }
     });
     function onSubmit(values) {
-        const transformedValues = {
-            ...values,
-            amount: values.amount.toString()
+        // Prepare the payload based on whether userId or accountNumber was provided
+        let payload = {
+            amount: values.amount,
+            type: values.type,
+            description: values.description
         };
-        mutate(transformedValues, {
+        // If account number was provided, send it in the payload
+        if (values.accountNumber) {
+            payload.accountNumber = values.accountNumber;
+        } else if (values.userId) {
+            // Convert userId string to number
+            payload.userId = Number(values.userId);
+        }
+        mutate(payload, {
             onSuccess: ()=>{
                 setOpen(false);
                 form.reset();
@@ -7950,19 +7806,19 @@ function CreateTransactionDialog() {
                             className: "w-4 h-4"
                         }, void 0, false, {
                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                            lineNumber: 71,
+                            lineNumber: 97,
                             columnNumber: 11
                         }, this),
                         "New Transaction"
                     ]
                 }, void 0, true, {
                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                    lineNumber: 70,
+                    lineNumber: 96,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                lineNumber: 69,
+                lineNumber: 95,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DialogContent"], {
@@ -7973,12 +7829,12 @@ function CreateTransactionDialog() {
                             children: "Process Transaction"
                         }, void 0, false, {
                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                            lineNumber: 77,
+                            lineNumber: 103,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                        lineNumber: 76,
+                        lineNumber: 102,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Form"], {
@@ -7993,33 +7849,37 @@ function CreateTransactionDialog() {
                                     render: ({ field })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormItem"], {
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormLabel"], {
-                                                    children: "User"
+                                                    children: "Select User (Optional)"
                                                 }, void 0, false, {
                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                    lineNumber: 86,
+                                                    lineNumber: 113,
                                                     columnNumber: 19
                                                 }, void 0),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Select"], {
-                                                    onValueChange: (value)=>field.onChange(Number(value)),
-                                                    value: field.value ? String(field.value) : undefined,
+                                                    onValueChange: (value)=>{
+                                                        field.onChange(value === "" ? undefined : value);
+                                                        // Clear account number when user is selected
+                                                        form.setValue('accountNumber', undefined);
+                                                    },
+                                                    value: field.value ?? "",
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
                                                             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectTrigger"], {
                                                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectValue"], {
-                                                                    placeholder: "Select a customer"
+                                                                    placeholder: "Select a customer by name"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                                    lineNumber: 90,
+                                                                    lineNumber: 124,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                                lineNumber: 89,
+                                                                lineNumber: 123,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         }, void 0, false, {
                                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                            lineNumber: 88,
+                                                            lineNumber: 122,
                                                             columnNumber: 21
                                                         }, void 0),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectContent"], {
@@ -8036,34 +7896,113 @@ function CreateTransactionDialog() {
                                                                     ]
                                                                 }, user.id, true, {
                                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                                    lineNumber: 95,
+                                                                    lineNumber: 129,
                                                                     columnNumber: 25
                                                                 }, void 0))
                                                         }, void 0, false, {
                                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                            lineNumber: 93,
+                                                            lineNumber: 127,
                                                             columnNumber: 21
                                                         }, void 0)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                    lineNumber: 87,
+                                                    lineNumber: 114,
                                                     columnNumber: 19
                                                 }, void 0),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                    lineNumber: 101,
+                                                    lineNumber: 135,
                                                     columnNumber: 19
                                                 }, void 0)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                            lineNumber: 85,
+                                            lineNumber: 112,
                                             columnNumber: 17
                                         }, void 0)
                                 }, void 0, false, {
                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                    lineNumber: 81,
+                                    lineNumber: 108,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "relative flex items-center justify-center",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "absolute inset-0 flex items-center",
+                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "w-full border-t border-gray-300"
+                                            }, void 0, false, {
+                                                fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
+                                                lineNumber: 143,
+                                                columnNumber: 17
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
+                                            lineNumber: 142,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "relative flex-shrink-0 px-4 text-xs font-medium text-gray-500 uppercase",
+                                            children: "Or"
+                                        }, void 0, false, {
+                                            fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
+                                            lineNumber: 145,
+                                            columnNumber: 15
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
+                                    lineNumber: 141,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormField"], {
+                                    control: form.control,
+                                    name: "accountNumber",
+                                    render: ({ field })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormItem"], {
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormLabel"], {
+                                                    children: "Recipient Account Number"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
+                                                    lineNumber: 156,
+                                                    columnNumber: 19
+                                                }, void 0),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
+                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
+                                                        placeholder: "Enter 10-20 digit account number",
+                                                        ...field,
+                                                        value: field.value || "",
+                                                        onChange: (e)=>{
+                                                            field.onChange(e.target.value);
+                                                            // Clear user selection when account number is entered
+                                                            form.setValue('userId', undefined);
+                                                        }
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
+                                                        lineNumber: 158,
+                                                        columnNumber: 21
+                                                    }, void 0)
+                                                }, void 0, false, {
+                                                    fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
+                                                    lineNumber: 157,
+                                                    columnNumber: 19
+                                                }, void 0),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
+                                                    fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
+                                                    lineNumber: 169,
+                                                    columnNumber: 19
+                                                }, void 0)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
+                                            lineNumber: 155,
+                                            columnNumber: 17
+                                        }, void 0)
+                                }, void 0, false, {
+                                    fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
+                                    lineNumber: 151,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8078,7 +8017,7 @@ function CreateTransactionDialog() {
                                                             children: "Type"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                            lineNumber: 112,
+                                                            lineNumber: 180,
                                                             columnNumber: 21
                                                         }, void 0),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Select"], {
@@ -8089,17 +8028,17 @@ function CreateTransactionDialog() {
                                                                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectTrigger"], {
                                                                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectValue"], {}, void 0, false, {
                                                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                                            lineNumber: 116,
+                                                                            lineNumber: 184,
                                                                             columnNumber: 27
                                                                         }, void 0)
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                                        lineNumber: 115,
+                                                                        lineNumber: 183,
                                                                         columnNumber: 25
                                                                     }, void 0)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                                    lineNumber: 114,
+                                                                    lineNumber: 182,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectContent"], {
@@ -8109,7 +8048,7 @@ function CreateTransactionDialog() {
                                                                             children: "Credit (Deposit)"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                                            lineNumber: 120,
+                                                                            lineNumber: 188,
                                                                             columnNumber: 25
                                                                         }, void 0),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectItem"], {
@@ -8117,35 +8056,35 @@ function CreateTransactionDialog() {
                                                                             children: "Debit (Withdrawal)"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                                            lineNumber: 121,
+                                                                            lineNumber: 189,
                                                                             columnNumber: 25
                                                                         }, void 0)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                                    lineNumber: 119,
+                                                                    lineNumber: 187,
                                                                     columnNumber: 23
                                                                 }, void 0)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                            lineNumber: 113,
+                                                            lineNumber: 181,
                                                             columnNumber: 21
                                                         }, void 0),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                            lineNumber: 124,
+                                                            lineNumber: 192,
                                                             columnNumber: 21
                                                         }, void 0)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                    lineNumber: 111,
+                                                    lineNumber: 179,
                                                     columnNumber: 19
                                                 }, void 0)
                                         }, void 0, false, {
                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                            lineNumber: 107,
+                                            lineNumber: 175,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormField"], {
@@ -8157,44 +8096,47 @@ function CreateTransactionDialog() {
                                                             children: "Amount ($)"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                            lineNumber: 134,
+                                                            lineNumber: 202,
                                                             columnNumber: 21
                                                         }, void 0),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
                                                             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
-                                                                type: "number",
-                                                                step: "0.01",
-                                                                ...field
+                                                                type: "text",
+                                                                inputMode: "decimal",
+                                                                placeholder: "0.00",
+                                                                ...field,
+                                                                value: field.value || "",
+                                                                onChange: field.onChange
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                                lineNumber: 136,
+                                                                lineNumber: 204,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         }, void 0, false, {
                                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                            lineNumber: 135,
+                                                            lineNumber: 203,
                                                             columnNumber: 21
                                                         }, void 0),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                            lineNumber: 138,
+                                                            lineNumber: 213,
                                                             columnNumber: 21
                                                         }, void 0)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                    lineNumber: 133,
+                                                    lineNumber: 201,
                                                     columnNumber: 19
                                                 }, void 0)
                                         }, void 0, false, {
                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                            lineNumber: 129,
+                                            lineNumber: 197,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                    lineNumber: 106,
+                                    lineNumber: 174,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormField"], {
@@ -8206,37 +8148,37 @@ function CreateTransactionDialog() {
                                                     children: "Description"
                                                 }, void 0, false, {
                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                    lineNumber: 149,
+                                                    lineNumber: 224,
                                                     columnNumber: 19
                                                 }, void 0),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
                                                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
-                                                        placeholder: "e.g. Salary Deposit",
+                                                        placeholder: "e.g. Transfer, Payment, etc.",
                                                         ...field
                                                     }, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                        lineNumber: 151,
+                                                        lineNumber: 226,
                                                         columnNumber: 21
                                                     }, void 0)
                                                 }, void 0, false, {
                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                    lineNumber: 150,
+                                                    lineNumber: 225,
                                                     columnNumber: 19
                                                 }, void 0),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                    lineNumber: 153,
+                                                    lineNumber: 228,
                                                     columnNumber: 19
                                                 }, void 0)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                            lineNumber: 148,
+                                            lineNumber: 223,
                                             columnNumber: 17
                                         }, void 0)
                                 }, void 0, false, {
                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                    lineNumber: 144,
+                                    lineNumber: 219,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -8246,30 +8188,30 @@ function CreateTransactionDialog() {
                                     children: isPending ? "Processing..." : "Process Transaction"
                                 }, void 0, false, {
                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                    lineNumber: 158,
+                                    lineNumber: 233,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                            lineNumber: 80,
+                            lineNumber: 106,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                        lineNumber: 79,
+                        lineNumber: 105,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                lineNumber: 75,
+                lineNumber: 101,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-        lineNumber: 68,
+        lineNumber: 94,
         columnNumber: 5
     }, this);
 }

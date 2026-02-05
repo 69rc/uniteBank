@@ -71,7 +71,7 @@ async function seedUsers() {
         transaction_pin: "1234",
         role: "ADMIN",
         status: "APPROVED",
-        isEmailVerified: true,
+        "isEmailVerified": true,
         account_number: adminAccountNumber,
         balance: "10000.00"
       })
@@ -141,7 +141,7 @@ async function seedUsers() {
         transaction_pin: "5678",
         role: "USER",
         status: "APPROVED",
-        isEmailVerified: true,
+        "isEmailVerified": true,
         account_number: userAccountNumber,
         balance: "1500.00"
       })

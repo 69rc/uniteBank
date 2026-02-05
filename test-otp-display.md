@@ -1,53 +1,26 @@
-# OTP Display Test Instructions
+# Registration Approval Test Instructions
 
-## How to Test the New OTP Display Feature
+Use this guide to validate the new post-registration experience where users wait for manual admin approval instead of entering an OTP code.
 
-1. **Start the application**:
-   ```bash
-   npm run dev
-   ```
+## Steps
 
-2. **Navigate to registration**:
-   - Go to `http://localhost:5000/auth`
-   - Click on the "Register" tab
+1. Navigate to `/auth?tab=register`.
+2. Complete the registration form with valid information and submit.
+3. Confirm that a success card appears explaining the application is pending review. The card should:
+   - Mention the email address that was used during registration.
+   - Explain that the compliance team will review the application.
+   - Provide "Edit Application" and "Back to Login" actions.
+4. Attempt to log in with the newly created credentials. You should see an error message stating that the account is awaiting admin approval.
+5. Sign in as an administrator, approve the user, and ensure the user can then log in successfully.
 
-3. **Fill out the registration form** with test data:
-   - First Name: Test
-   - Last Name: User
-   - Email: test@example.com
-   - Phone: +1234567890
-   - Date of Birth: 1990-01-01
-   - Country: USA
-   - Address: 123 Test St
-   - Password: testpass123
+## Expected Messaging
 
-4. **Submit the form**:
-   - Click "Create Account"
-   - The form should submit successfully
+- **Registration Toast:** "Application submitted" with detailed copy from the backend response.
+- **Login Error (Pending):** "Account pending admin approval".
+- **Login Error (Rejected):** "Account rejected. Contact support."
 
-5. **Verify OTP Display**:
-   - You should be redirected to the OTP verification screen
-   - The 6-digit OTP code should be displayed in a blue box
-   - There should be a copy button next to the code
-   - The code should also be logged in the server console
+## Notes
 
-6. **Test OTP Verification**:
-   - Copy the displayed OTP code
-   - Paste it into the verification input field
-   - Click "Verify & Continue"
-   - You should be redirected to the dashboard
-
-## Expected Behavior
-
-✅ **Backend**: Returns OTP code in registration response
-✅ **Frontend**: Displays OTP code prominently on verification screen
-✅ **Copy Feature**: Users can copy the OTP code to clipboard
-✅ **Verification**: OTP verification works as before
-✅ **User Experience**: No need to check console logs
-
-## Development Notes
-
-- The OTP is displayed for development/testing purposes
-- In production, you would replace this with actual email sending
-- The OTP expires after 5 minutes (as configured in storage.ts)
-- Each new registration generates a fresh OTP code
+- Email verification is now auto-approved for newly created accounts.
+- Manual admin approval is required before a customer can access the dashboard.
+- Password reset flows still rely on OTP codes and are unaffected by this change.

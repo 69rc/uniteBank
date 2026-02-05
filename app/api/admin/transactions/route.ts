@@ -49,18 +49,32 @@ export async function POST(request: NextRequest) {
     const parsedInput = api.admin.createTransaction.input.parse(requestBody);
     console.log("5. Input parsed successfully:", JSON.stringify(parsedInput, null, 2));
 
-    const input = {
-      ...parsedInput,
-      userId: Number(parsedInput.userId),
-      amount: parsedInput.amount.toString(),
-    };
-    console.log("5a. Normalized input:", JSON.stringify(input, null, 2));
+    // Determine the user ID - either from userId or by looking up account number
+    let userId: number;
+
+    if (parsedInput.accountNumber) {
+      // Look up user by account number
+      const user = await adminStorage.getUserByAccountNumber(parsedInput.accountNumber);
+      if (!user) {
+        return Response.json({ message: "User with account number not found" }, { status: 404 });
+      }
+      userId = user.id;
+      console.log(`5a. Found user by account number ${parsedInput.accountNumber}: user ID ${userId}`);
+    } else if (parsedInput.userId) {
+      userId = Number(parsedInput.userId);
+      if (isNaN(userId)) {
+        return Response.json({ message: "Invalid user ID provided" }, { status: 400 });
+      }
+      console.log(`5a. Using user ID from request: ${userId}`);
+    } else {
+      return Response.json({ message: "Either userId or accountNumber must be provided" }, { status: 400 });
+    }
 
     const transactionData = {
-      userId: input.userId,
-      type: input.type,
-      amount: input.amount, // Already converted to string by schema
-      description: input.description,
+      userId: userId,
+      type: parsedInput.type,
+      amount: parsedInput.amount, // Already converted to string by schema
+      description: parsedInput.description,
       createdBy: "ADMIN" as const,
     };
 
@@ -70,11 +84,11 @@ export async function POST(request: NextRequest) {
     console.log("7. Transaction created successfully:", tx.id);
 
     // Update User Balance
-    const user = await adminStorage.getUser(input.userId);
+    const user = await adminStorage.getUser(userId);
     if (user) {
       const currentBalance = parseFloat(user.balance);
-      const amount = parseFloat(input.amount);
-      const newBalance = input.type === 'CREDIT'
+      const amount = parseFloat(parsedInput.amount);
+      const newBalance = parsedInput.type === 'CREDIT'
         ? (currentBalance + amount).toFixed(2)
         : (currentBalance - amount).toFixed(2);
 

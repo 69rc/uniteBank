@@ -82,7 +82,7 @@ export class SupabaseStorage implements IStorage {
         transaction_pin,
         role,
         status,
-        is_email_verified,
+         isEmailVerified,
         account_number,
         customer_id,
         balance,
@@ -129,7 +129,7 @@ export class SupabaseStorage implements IStorage {
         transaction_pin,
         role,
         status,
-        is_email_verified,
+         isEmailVerified,
         account_number,
         customer_id,
         balance,
@@ -179,7 +179,7 @@ export class SupabaseStorage implements IStorage {
         transaction_pin,
         role,
         status,
-        is_email_verified,
+         isEmailVerified,
         account_number,
         customer_id,
         balance,
@@ -227,7 +227,7 @@ export class SupabaseStorage implements IStorage {
         transaction_pin,
         role,
         status,
-        is_email_verified,
+         isEmailVerified,
         account_number,
         customer_id,
         balance,
@@ -275,7 +275,7 @@ export class SupabaseStorage implements IStorage {
         transaction_pin,
         role,
         status,
-        is_email_verified,
+         isEmailVerified,
         account_number,
         customer_id,
         balance,
@@ -323,7 +323,7 @@ export class SupabaseStorage implements IStorage {
         transaction_pin,
         role,
         status,
-        is_email_verified,
+         isEmailVerified,
         account_number,
         customer_id,
         balance,
@@ -342,7 +342,7 @@ export class SupabaseStorage implements IStorage {
   async verifyUserEmail(email: string): Promise<void> {
     const { error } = await supabase
       .from('users')
-      .update({ isEmailVerified: true })
+      .update({  isEmailVerified: true })
       .eq('email', email);
 
     if (error) throw error;
@@ -387,7 +387,7 @@ export class SupabaseStorage implements IStorage {
         transaction_pin,
         role,
         status,
-        is_email_verified,
+         isEmailVerified,
         account_number,
         customer_id,
         balance,

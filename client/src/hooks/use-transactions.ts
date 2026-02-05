@@ -33,8 +33,17 @@ export function useCreateTransaction() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  // Define the type for the transaction creation input
+  type CreateTransactionInput = {
+    userId?: string;
+    accountNumber?: string;
+    type: "CREDIT" | "DEBIT";
+    amount: string;
+    description: string;
+  };
+
   return useMutation({
-    mutationFn: async (data: Omit<InsertTransaction, "createdBy">) => {
+    mutationFn: async (data: CreateTransactionInput) => {
       const res = await fetch(api.admin.createTransaction.path, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

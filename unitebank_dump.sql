@@ -139,7 +139,7 @@ CREATE TABLE public.users (
     transaction_pin text NOT NULL,
     role text DEFAULT 'USER'::text NOT NULL,
     status text DEFAULT 'PENDING'::text NOT NULL,
-    is_email_verified boolean DEFAULT false NOT NULL,
+     isEmailVerified boolean DEFAULT false NOT NULL,
     account_number character varying(20),
     balance numeric(12,2) DEFAULT 0.00 NOT NULL,
     created_at timestamp without time zone DEFAULT now(),
@@ -225,7 +225,7 @@ COPY public.transactions (id, user_id, type, amount, description, created_at, cr
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.users (id, first_name, last_name, other_name, email, phone, dob, gender, nationality, address, city, state, country, zip_code, id_type, id_number, id_expiry_date, id_image_url, selfie_url, account_type, currency, account_purpose, password, transaction_pin, role, status, is_email_verified, account_number, balance, created_at, customer_id) FROM stdin;
+COPY public.users (id, first_name, last_name, other_name, email, phone, dob, gender, nationality, address, city, state, country, zip_code, id_type, id_number, id_expiry_date, id_image_url, selfie_url, account_type, currency, account_purpose, password, transaction_pin, role, status,  isEmailVerified, account_number, balance, created_at, customer_id) FROM stdin;
 1	Super	Admin	\N	admin@bank.com	0000000000	2000-01-01	OTHER	US	Bank HQ	New York	NY	US	10001	PASSPORT	ADMIN001	2030-01-01	\N	\N	CHECKING	USD	\N	7f8d53ee8adc367155cad2ef280d1a775e0c6e8fdd80b5c2cbdbde81b2439baf97950c071e56d881e4437ba8ddc228362e789eb595fbd5c9f7bfdd668781b334.7e40eba4531f7c97206fdd0cdf597c25	1234	ADMIN	APPROVED	t	2418344388	1000000.00	2026-02-03 09:47:55.232289	CU9561501578805
 3	Test	User	\N	test-creation@example.com	+1234567890	1990-01-01	Male	US	123 Test St	Test City	Test State	USA	12345	Driver License	DL123456789	2030-01-01	\N	\N	SAVINGS	USD	Testing	hashedpassword123	1234	USER	APPROVED	f	2021234567890	-999.00	2026-02-03 11:04:15.330559	CU1234567890123
 2	John	Doe	\N	john.doe@example.com	+1987654321	1995-06-15	Male	US	456 User Avenue	Los Angeles	CA	USA	90210	Driver License	DL987654321	2028-06-15	\N	\N	SAVINGS	USD	Personal Banking	100a46ea029d5d58c1626bc5b2b8d16be472e45da994974a380f660442793f33cb76fb617d252f188f85917362c51fefea74138a9da5c499b9f77739d89821e3.a536777b1a71bec67d97ed70ad36070f	5678	USER	APPROVED	t	8285549548	21700.00	2026-02-03 10:01:22.163386	CU4705480090716

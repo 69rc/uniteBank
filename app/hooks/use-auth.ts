@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@shared/routes";
-import { insertUserSchema, type InsertUser, type LoginRequest, type OtpRequest, type User } from "@shared/schema";
+import { insertUserSchema, type InsertUser, type LoginRequest, type User } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 
@@ -29,7 +29,8 @@ export function useAuth() {
       });
       if (!res.ok) {
         if (res.status === 401) throw new Error("Invalid email or password");
-        throw new Error("Login failed");
+        const errorData = await res.json().catch(() => null);
+        throw new Error(errorData?.message || "Login failed");
       }
       return (await res.json()) as User;
     },
@@ -60,7 +61,7 @@ export function useAuth() {
   const registerMutation = useMutation({
     mutationFn: async (
       data: InsertUser
-    ): Promise<{ message: string; email: string; otp?: string }> => {
+    ): Promise<{ message: string; email: string }> => {
       const res = await fetch(api.auth.register.path, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -71,38 +72,16 @@ export function useAuth() {
         const errorData = await res.json();
         throw new Error(errorData.message || "Registration failed");
       }
-      return (await res.json()) as { message: string; email: string; otp?: string };
+      return (await res.json()) as { message: string; email: string };
     },
-    onSuccess: () => {
+    onSuccess: (res) => {
       toast({
-        title: "Registration successful",
-        description: "Please check your email for the verification code.",
+        title: "Application submitted",
+        description: res.message,
       });
     },
     onError: (error: Error) => {
       toast({ title: "Registration Failed", description: error.message, variant: "destructive" });
-    },
-  });
-
-  const verifyOtpMutation = useMutation({
-    mutationFn: async (data: OtpRequest) => {
-      const res = await fetch(api.auth.verifyOtp.path, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Invalid OTP");
-      }
-      return await res.json();
-    },
-    onSuccess: (data: { user: User }) => {
-      queryClient.setQueryData([api.auth.me.path], data.user);
-      toast({ title: "Verified!", description: "Account created successfully." });
-    },
-    onError: (error: Error) => {
-      toast({ title: "Verification Failed", description: error.message, variant: "destructive" });
     },
   });
 
@@ -160,7 +139,6 @@ export function useAuth() {
     loginMutation,
     logoutMutation,
     registerMutation,
-    verifyOtpMutation,
     forgotPasswordMutation,
     resetPasswordMutation,
   };

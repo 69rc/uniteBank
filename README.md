@@ -14,15 +14,12 @@ A full-stack banking application built with React, Node.js, and PostgreSQL.
 - You can view the database using Replit's built-in PostgreSQL tool in the sidebar.
 - Alternatively, you can inspect the schema in `shared/schema.ts`.
 
-## How to Test OTP
+## Registration Flow
 
 1. Go to the Registration page (`/auth?tab=register`).
 2. Fill in the details and submit.
-3. **Check the Replit Console (Shell/Logs)**. You will see a log entry like:
-   ```
-   [MOCK EMAIL] To: user@example.com, OTP: 123456
-   ```
-4. Enter this code in the OTP verification modal.
+3. You'll see a confirmation message indicating the application is awaiting admin review.
+4. An administrator must approve the account from the dashboard before the user can log in.
 
 ## Admin Access
 

@@ -113,11 +113,26 @@ export const api = {
       method: 'POST' as const,
       path: '/api/admin/transactions',
       input: insertTransactionSchema
-        .omit({ createdBy: true })
+        .omit({ createdBy: true, userId: true }) // Omit userId from original schema
         .extend({
-          userId: z.coerce.number().int().min(1, "User is required"),
-          amount: z.coerce.string(), // Accept number and convert to string
-        }),
+          // Either userId or accountNumber must be provided
+          userId: z.string().optional(),
+          accountNumber: z.string().min(10, "Account number must be at least 10 digits").max(20, "Account number is too long").optional(),
+          amount: z.string().min(1, "Amount is required").refine(
+            (val) => {
+              const num = Number(val);
+              return !isNaN(num) && num >= 0.01;
+            },
+            { message: "Amount must be greater than 0" }
+          ),
+        })
+        .refine(
+          (data) => data.userId || data.accountNumber,
+          {
+            message: "Either userId or accountNumber must be provided",
+            path: ["userId"],
+          }
+        ),
       responses: {
         201: z.custom<typeof transactions.$inferSelect>(),
         400: errorSchemas.validation,

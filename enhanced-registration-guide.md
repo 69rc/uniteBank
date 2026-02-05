@@ -46,8 +46,8 @@ The registration form now includes all required banking information organized in
 3. **Click "Register" tab**
 4. **Fill out all sections** with test data
 5. **Submit the form**
-6. **Verify with OTP** (displayed on screen)
-7. **Access your dashboard** with complete account info
+6. **Review the pending approval message**
+7. **Wait for an administrator to approve the account before logging in**
 
 ## **Sample Test Data**
 
@@ -97,6 +97,6 @@ Security:
 - **Validation**: Form validation for all required fields
 - **Auto-Generation**: Account numbers and customer IDs created automatically
 - **Professional UI**: Clean, scrollable form with proper styling
-- **OTP Display**: Verification code shown on screen for easy testing
+- **Admin Approval Messaging**: Clear instructions informing users to wait for manual review
 
 The registration form now captures all necessary information for a complete banking application while maintaining a user-friendly experience!

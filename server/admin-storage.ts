@@ -5,6 +5,7 @@ export interface IStorage {
   // Users
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByAccountNumber(accountNumber: string): Promise<User | undefined>;
   createUser(user: any): Promise<User>;
   updateUserStatus(id: number, status: "PENDING" | "APPROVED" | "REJECTED"): Promise<User | undefined>;
   updateUserBalance(id: number, balance: string): Promise<User | undefined>;
@@ -79,7 +80,7 @@ export class SupabaseAdminStorage implements IStorage {
         transaction_pin,
         role,
         status,
-        isEmailVerified,
+        "isEmailVerified",
         account_number,
         customer_id,
         balance,
@@ -127,7 +128,7 @@ export class SupabaseAdminStorage implements IStorage {
         transaction_pin,
         role,
         status,
-        isEmailVerified,
+        "isEmailVerified",
         account_number,
         customer_id,
         balance,
@@ -178,7 +179,7 @@ export class SupabaseAdminStorage implements IStorage {
         transaction_pin,
         role,
         status,
-        isEmailVerified,
+        "isEmailVerified",
         account_number,
         customer_id,
         balance,
@@ -227,7 +228,7 @@ export class SupabaseAdminStorage implements IStorage {
         transaction_pin,
         role,
         status,
-        isEmailVerified,
+        "isEmailVerified",
         account_number,
         customer_id,
         balance,
@@ -276,7 +277,7 @@ export class SupabaseAdminStorage implements IStorage {
         transaction_pin,
         role,
         status,
-        isEmailVerified,
+        "isEmailVerified",
         account_number,
         customer_id,
         balance,
@@ -325,7 +326,7 @@ export class SupabaseAdminStorage implements IStorage {
         transaction_pin,
         role,
         status,
-        isEmailVerified,
+        "isEmailVerified",
         account_number,
         customer_id,
         balance,
@@ -345,7 +346,7 @@ export class SupabaseAdminStorage implements IStorage {
     const adminClient = await createAdminSupabaseClient();
     const { error } = await adminClient
       .from('users')
-      .update({ isEmailVerified: true })
+      .update({ "isEmailVerified": true })
       .eq('email', email);
 
     if (error) throw error;
@@ -359,6 +360,54 @@ export class SupabaseAdminStorage implements IStorage {
       .eq('id', id);
 
     if (error) throw error;
+  }
+
+  async getUserByAccountNumber(accountNumber: string): Promise<User | undefined> {
+    const adminClient = await createAdminSupabaseClient();
+    const { data, error } = await adminClient
+      .from('users')
+      .select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        "isEmailVerified",
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `)
+      .eq('account_number', accountNumber)
+      .single();
+
+    if (error) throw error;
+    // Transform snake_case response to camelCase to match schema
+    if (data) {
+      return snakeToCamel(data) as User;
+    }
+    return undefined;
   }
 
   async getAllUsers(): Promise<User[]> {
@@ -414,7 +463,7 @@ export class SupabaseAdminStorage implements IStorage {
       .from('otps')
       .delete()
       .eq('id', data.id);
-      
+
     return true;
   }
 
@@ -493,23 +542,130 @@ export class SupabasePublicStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
     const { data, error } = await supabase
       .from('users')
-      .select('*')
+      .select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        "isEmailVerified",
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `)
       .eq('id', id)
       .single();
 
     if (error) throw error;
-    return data;
+    return data ? snakeToCamel(data) : undefined;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
     const { data, error } = await supabase
       .from('users')
-      .select('*')
+      .select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        "isEmailVerified",
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `)
       .eq('email', email)
       .maybeSingle();
 
     if (error) throw error;
-    return data ?? undefined;
+    return data ? snakeToCamel(data) : undefined;
+  }
+
+  async getUserByAccountNumber(accountNumber: string): Promise<User | undefined> {
+    const { data, error } = await supabase
+      .from('users')
+      .select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        "isEmailVerified",
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `)
+      .eq('account_number', accountNumber)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data ? snakeToCamel(data) : undefined;
   }
 
   async getTransactionsByUserId(userId: number): Promise<Transaction[]> {

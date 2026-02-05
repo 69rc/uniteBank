@@ -79,7 +79,7 @@ export class SupabaseAdminStorage implements IStorage {
         transaction_pin,
         role,
         status,
-        is_email_verified,
+         isEmailVerified,
         account_number,
         customer_id,
         balance,
@@ -127,7 +127,7 @@ export class SupabaseAdminStorage implements IStorage {
         transaction_pin,
         role,
         status,
-        is_email_verified,
+         isEmailVerified,
         account_number,
         customer_id,
         balance,
@@ -178,7 +178,7 @@ export class SupabaseAdminStorage implements IStorage {
         transaction_pin,
         role,
         status,
-        is_email_verified,
+         isEmailVerified,
         account_number,
         customer_id,
         balance,
@@ -227,7 +227,7 @@ export class SupabaseAdminStorage implements IStorage {
         transaction_pin,
         role,
         status,
-        is_email_verified,
+         isEmailVerified,
         account_number,
         customer_id,
         balance,
@@ -276,7 +276,7 @@ export class SupabaseAdminStorage implements IStorage {
         transaction_pin,
         role,
         status,
-        is_email_verified,
+         isEmailVerified,
         account_number,
         customer_id,
         balance,
@@ -325,7 +325,7 @@ export class SupabaseAdminStorage implements IStorage {
         transaction_pin,
         role,
         status,
-        is_email_verified,
+         isEmailVerified,
         account_number,
         customer_id,
         balance,
@@ -345,7 +345,7 @@ export class SupabaseAdminStorage implements IStorage {
     const adminClient = await createAdminSupabaseClient();
     const { error } = await adminClient
       .from('users')
-      .update({ is_email_verified: true })
+      .update({  isEmailVerified: true })
       .eq('email', email);
 
     if (error) throw error;

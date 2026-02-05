@@ -23,7 +23,7 @@ async function exportUsersToCSV() {
         persistSession: false,
       },
     });
-    
+
     console.log('📚 Fetching users from database...');
     const { data: users, error } = await adminClient
       .from('users')
@@ -45,7 +45,7 @@ async function exportUsersToCSV() {
     const headers = [
       'id',
       'first_name',
-      'last_name', 
+      'last_name',
       'other_name',
       'email',
       'phone',
@@ -69,7 +69,7 @@ async function exportUsersToCSV() {
       'transaction_pin',
       'role',
       'status',
-      'isEmailVerified',
+      ' isEmailVerified',
       'account_number',
       'customer_id',
       'balance',
@@ -78,7 +78,7 @@ async function exportUsersToCSV() {
 
     // Convert data to CSV rows
     const csvRows = [headers.join(',')]; // Header row
-    
+
     for (const user of users) {
       const row = headers.map(header => {
         // Map snake_case headers to camelCase object properties
@@ -94,46 +94,46 @@ async function exportUsersToCSV() {
           'account_type': 'accountType',
           'account_purpose': 'accountPurpose',
           'transaction_pin': 'transactionPin',
-          'isEmailVerified': 'isEmailVerified',
+          ' isEmailVerified': 'isEmailVerified',
           'account_number': 'accountNumber',
           'customer_id': 'customerId',
           'created_at': 'createdAt'
         };
-        
+
         const property = propertyMap[header] || header;
         let value = user[property];
-        
+
         // Handle null/undefined values
         if (value === null || value === undefined) {
           return '';
         }
-        
+
         // Convert dates to ISO format if needed
         if (value instanceof Date) {
           return value.toISOString();
         }
-        
+
         // Escape commas and quotes for CSV safety
         value = String(value);
         if (value.includes(',') || value.includes('"') || value.includes('\n')) {
           value = `"${value.replace(/"/g, '""')}"`;
         }
-        
+
         return value;
       });
-      
+
       csvRows.push(row.join(','));
     }
 
     // Create CSV content
     const csvContent = csvRows.join('\n');
-    
+
     // Define output file path (in the current directory)
     const outputPath = path.join(process.cwd(), 'seed-users.csv');
-    
+
     // Write CSV file
     await fs.writeFile(outputPath, csvContent, 'utf-8');
-    
+
     console.log(`✅ Users exported successfully to: ${outputPath}`);
     console.log(`📊 Total users exported: ${users.length}`);
     console.log('\n📝 Instructions for uploading to Supabase:');
@@ -144,7 +144,7 @@ async function exportUsersToCSV() {
     console.log('   - Use the Table Editor to import the CSV directly');
     console.log('4. If using CSV import, make sure your table is named "users"');
     console.log('5. The CSV columns map to the users table schema');
-    
+
   } catch (error) {
     console.error('❌ Error exporting users to CSV:', error);
     process.exit(1);

@@ -12,9 +12,13 @@ export async function POST(request: NextRequest) {
     if (!user || !(await comparePasswords(input.password, user.password))) {
       return Response.json({ message: "Invalid email or password" }, { status: 401 });
     }
-console.log(user);
-    if (!user.isEmailVerified) {
-      return Response.json({ message: "Email not verified" }, { status: 401 });
+    console.log(user);
+    if (user.status === "PENDING") {
+      return Response.json({ message: "Account pending admin approval" }, { status: 403 });
+    }
+
+    if (user.status === "REJECTED") {
+      return Response.json({ message: "Account rejected. Contact support." }, { status: 403 });
     }
 
     // Create session for the user

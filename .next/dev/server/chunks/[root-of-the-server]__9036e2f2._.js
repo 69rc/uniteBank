@@ -323,10 +323,24 @@ const api = {
             method: 'POST',
             path: '/api/admin/transactions',
             input: __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$shared$2f$schema$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["insertTransactionSchema"].omit({
-                createdBy: true
-            }).extend({
-                userId: __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$zod$2f$lib$2f$index$2e$mjs__$5b$app$2d$route$5d$__$28$ecmascript$29$__["z"].coerce.number().int().min(1, "User is required"),
-                amount: __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$zod$2f$lib$2f$index$2e$mjs__$5b$app$2d$route$5d$__$28$ecmascript$29$__["z"].coerce.string()
+                createdBy: true,
+                userId: true
+            }) // Omit userId from original schema
+            .extend({
+                // Either userId or accountNumber must be provided
+                userId: __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$zod$2f$lib$2f$index$2e$mjs__$5b$app$2d$route$5d$__$28$ecmascript$29$__["z"].string().optional(),
+                accountNumber: __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$zod$2f$lib$2f$index$2e$mjs__$5b$app$2d$route$5d$__$28$ecmascript$29$__["z"].string().min(10, "Account number must be at least 10 digits").max(20, "Account number is too long").optional(),
+                amount: __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$zod$2f$lib$2f$index$2e$mjs__$5b$app$2d$route$5d$__$28$ecmascript$29$__["z"].string().min(1, "Amount is required").refine((val)=>{
+                    const num = Number(val);
+                    return !isNaN(num) && num >= 0.01;
+                }, {
+                    message: "Amount must be greater than 0"
+                })
+            }).refine((data)=>data.userId || data.accountNumber, {
+                message: "Either userId or accountNumber must be provided",
+                path: [
+                    "userId"
+                ]
             }),
             responses: {
                 201: __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$zod$2f$lib$2f$index$2e$mjs__$5b$app$2d$route$5d$__$28$ecmascript$29$__["z"].custom(),
@@ -457,7 +471,7 @@ class SupabaseAdminStorage {
         transaction_pin,
         role,
         status,
-        isEmailVerified,
+        "isEmailVerified",
         account_number,
         customer_id,
         balance,
@@ -499,7 +513,7 @@ class SupabaseAdminStorage {
         transaction_pin,
         role,
         status,
-        isEmailVerified,
+        "isEmailVerified",
         account_number,
         customer_id,
         balance,
@@ -545,7 +559,7 @@ class SupabaseAdminStorage {
         transaction_pin,
         role,
         status,
-        isEmailVerified,
+        "isEmailVerified",
         account_number,
         customer_id,
         balance,
@@ -589,7 +603,7 @@ class SupabaseAdminStorage {
         transaction_pin,
         role,
         status,
-        isEmailVerified,
+        "isEmailVerified",
         account_number,
         customer_id,
         balance,
@@ -633,7 +647,7 @@ class SupabaseAdminStorage {
         transaction_pin,
         role,
         status,
-        isEmailVerified,
+        "isEmailVerified",
         account_number,
         customer_id,
         balance,
@@ -677,7 +691,7 @@ class SupabaseAdminStorage {
         transaction_pin,
         role,
         status,
-        isEmailVerified,
+        "isEmailVerified",
         account_number,
         customer_id,
         balance,
@@ -693,7 +707,7 @@ class SupabaseAdminStorage {
     async verifyUserEmail(email) {
         const adminClient = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createAdminSupabaseClient"])();
         const { error } = await adminClient.from('users').update({
-            isEmailVerified: true
+            "isEmailVerified": true
         }).eq('email', email);
         if (error) throw error;
     }
@@ -703,6 +717,48 @@ class SupabaseAdminStorage {
             password
         }).eq('id', id);
         if (error) throw error;
+    }
+    async getUserByAccountNumber(accountNumber) {
+        const adminClient = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createAdminSupabaseClient"])();
+        const { data, error } = await adminClient.from('users').select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        "isEmailVerified",
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `).eq('account_number', accountNumber).single();
+        if (error) throw error;
+        // Transform snake_case response to camelCase to match schema
+        if (data) {
+            return snakeToCamel(data);
+        }
+        return undefined;
     }
     async getAllUsers() {
         const adminClient = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createAdminSupabaseClient"])();
@@ -807,14 +863,115 @@ class SupabaseAdminStorage {
 class SupabasePublicStorage {
     // Public methods that don't require admin privileges
     async getUser(id) {
-        const { data, error } = await __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["supabase"].from('users').select('*').eq('id', id).single();
+        const { data, error } = await __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["supabase"].from('users').select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        "isEmailVerified",
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `).eq('id', id).single();
         if (error) throw error;
-        return data;
+        return data ? snakeToCamel(data) : undefined;
     }
     async getUserByEmail(email) {
-        const { data, error } = await __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["supabase"].from('users').select('*').eq('email', email).maybeSingle();
+        const { data, error } = await __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["supabase"].from('users').select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        "isEmailVerified",
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `).eq('email', email).maybeSingle();
         if (error) throw error;
-        return data ?? undefined;
+        return data ? snakeToCamel(data) : undefined;
+    }
+    async getUserByAccountNumber(accountNumber) {
+        const { data, error } = await __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["supabase"].from('users').select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        "isEmailVerified",
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `).eq('account_number', accountNumber).maybeSingle();
+        if (error) throw error;
+        return data ? snakeToCamel(data) : undefined;
     }
     async getTransactionsByUserId(userId) {
         const { data, error } = await __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["supabase"].from('transactions').select('*').eq('user_id', userId).order('created_at', {

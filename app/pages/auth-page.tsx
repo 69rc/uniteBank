@@ -5,22 +5,20 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
-import { insertUserSchema, loginSchema, otpSchema } from "@shared/schema";
+import { insertUserSchema, loginSchema } from "@shared/schema";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Landmark, ArrowRight, Loader2, CheckCircle, Copy, Check } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Landmark, ArrowRight, Loader2, CheckCircle } from "lucide-react";
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState("login");
-  const { loginMutation, registerMutation, verifyOtpMutation, user } = useAuth();
+  const { loginMutation, registerMutation, user } = useAuth();
   const [, setLocation] = useLocation();
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
-  const [otpCode, setOtpCode] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -93,7 +91,7 @@ export default function AuthPage() {
               </div>
             </div>
             {registeredEmail ? (
-              <OtpForm email={registeredEmail} otpCode={otpCode} onVerify={() => setLocation("/dashboard")} />
+              <PostRegistrationNotice email={registeredEmail} onBack={() => setRegisteredEmail(null)} />
             ) : (
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2 mb-8 p-1 bg-slate-200/50">
@@ -179,7 +177,7 @@ function LoginForm() {
   );
 }
 
-function RegisterForm({ onSuccess }: { onSuccess: (email: string, otp?: string | null) => void }) {
+function RegisterForm({ onSuccess }: { onSuccess: (email: string) => void }) {
   const { registerMutation } = useAuth();
 
   const form = useForm<z.infer<typeof insertUserSchema>>({
@@ -220,7 +218,7 @@ function RegisterForm({ onSuccess }: { onSuccess: (email: string, otp?: string |
           <form
             onSubmit={form.handleSubmit((d) =>
               registerMutation.mutate(d, {
-                onSuccess: (res) => onSuccess(res.email, res.otp ?? null),
+                onSuccess: (res) => onSuccess(res.email),
               })
             )}
             className="space-y-6"
@@ -617,86 +615,31 @@ function RegisterForm({ onSuccess }: { onSuccess: (email: string, otp?: string |
   );
 }
 
-function OtpForm({ email, otpCode, onVerify }: { email: string; otpCode: string | null; onVerify: () => void }) {
-  const { verifyOtpMutation } = useAuth();
-  const { toast } = useToast();
-  const [copied, setCopied] = useState(false);
-
-  const form = useForm<z.infer<typeof otpSchema>>({
-    resolver: zodResolver(otpSchema),
-    defaultValues: { email, code: "" },
-  });
-
-  const copyToClipboard = async () => {
-    if (otpCode) {
-      await navigator.clipboard.writeText(otpCode);
-      setCopied(true);
-      toast({ title: "Copied!", description: "OTP code copied to clipboard" });
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
+function PostRegistrationNotice({ email, onBack }: { email: string; onBack: () => void }) {
+  const [, setLocation] = useLocation();
 
   return (
     <Card className="border-none shadow-xl shadow-slate-200/60 animate-in fade-in slide-in-from-right-4">
-      <CardHeader className="text-center">
-        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <CheckCircle className="w-6 h-6 text-green-600" />
+      <CardHeader className="text-center space-y-4">
+        <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto">
+          <CheckCircle className="w-6 h-6 text-yellow-600" />
         </div>
-        <CardTitle className="font-display text-2xl">Verify Email</CardTitle>
+        <CardTitle className="font-display text-2xl">Application Received</CardTitle>
         <CardDescription>
-          Enter the 6-digit verification code for <span className="font-medium text-slate-900">{email}</span>
+          Thanks for registering, <span className="font-medium text-slate-900">{email}</span>
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        {/* Display OTP Code */}
-        {otpCode && (
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800 mb-2 font-medium">Your verification code:</p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
-              <span className="text-3xl font-mono font-bold text-blue-900 tracking-[0.3em] bg-white px-4 py-2 rounded border-2 border-blue-300">
-                {otpCode}
-              </span>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={copyToClipboard}
-                className="h-12 px-3"
-              >
-                {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
-              </Button>
-            </div>
-            <p className="text-xs text-blue-600 mt-2 text-center">
-              Click the copy button or enter the code below to verify your account
-            </p>
-          </div>
-        )}
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit((d) => verifyOtpMutation.mutate(d, { onSuccess: onVerify }))} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="code"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Enter Verification Code</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      className="text-center text-2xl tracking-[0.5em] font-mono h-14"
-                      maxLength={6}
-                      placeholder="000000"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full" disabled={verifyOtpMutation.isPending}>
-              {verifyOtpMutation.isPending ? "Verifying..." : "Verify & Continue"} <ArrowRight className="ml-2 w-4 h-4" />
-            </Button>
-          </form>
-        </Form>
+      <CardContent className="space-y-4">
+        <p className="text-sm text-slate-600 text-center leading-relaxed">
+          Our compliance team is reviewing your submission. You will receive an email once your account has been
+          approved. You can close this window or return to the login page.
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Button variant="outline" onClick={onBack}>
+            Edit Application
+          </Button>
+          <Button onClick={() => setLocation("/auth")}>Back to Login</Button>
+        </div>
       </CardContent>
     </Card>
   );

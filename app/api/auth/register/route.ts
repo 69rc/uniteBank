@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       role: "USER",
       status: "PENDING",
       balance: "0.00",
-      isEmailVerified: false,
+      // isEmailVerified: true,
     };
 
     const dbPayload = {
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       transaction_pin: userToCreate.transactionPin,
       role: userToCreate.role,
       status: userToCreate.status,
-      isEmailVerified: userToCreate.isEmailVerified,
+      // "isEmailVerified": userToCreate.isEmailVerified,
       account_number: userToCreate.accountNumber,
       customer_id: userToCreate.customerId,
       balance: userToCreate.balance,
@@ -66,23 +66,20 @@ export async function POST(request: NextRequest) {
 
     const user = await adminStorage.createUser(dbPayload);
 
-    // Generate OTP
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    await adminStorage.createOtp(user.email, code);
-
-    try {
-      await sendOtpEmail(user.email, code, "EMAIL_VERIFICATION");
-      console.log(`[OTP EMAIL SENT] To: ${user.email}`);
-    } catch (emailErr) {
-      console.error("Failed to send OTP email", emailErr);
-      return Response.json({
-        message:
-          "User created but we could not send the verification email. Please try again later.",
-      }, { status: 500 });
-    }
+    // Skip OTP generation since we're bypassing email verification
+    // try {
+    //   await sendOtpEmail(user.email, code, "EMAIL_VERIFICATION");
+    //   console.log(`[OTP EMAIL SENT] To: ${user.email}`);
+    // } catch (emailErr) {
+    //   console.error("Failed to send OTP email", emailErr);
+    //   return Response.json({
+    //     message:
+    //       "User created but we could not send the verification email. Please try again later.",
+    //   }, { status: 500 });
+    // }
 
     return Response.json({
-      message: "User created. Please verify your email with the OTP code sent to your email.",
+      message: "Application received. Please wait for admin approval before logging in.",
       email: user.email
     }, { status: 201 });
   } catch (err: any) {
