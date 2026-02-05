@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     console.log("5. Input parsed successfully:", JSON.stringify(parsedInput, null, 2));
 
     // Determine the user ID - either from userId or by looking up account number
-    let userId: number;
+    let userId: string;
 
     if (parsedInput.accountNumber) {
       // Look up user by account number
@@ -61,10 +61,7 @@ export async function POST(request: NextRequest) {
       userId = user.id;
       console.log(`5a. Found user by account number ${parsedInput.accountNumber}: user ID ${userId}`);
     } else if (parsedInput.userId) {
-      userId = Number(parsedInput.userId);
-      if (isNaN(userId)) {
-        return Response.json({ message: "Invalid user ID provided" }, { status: 400 });
-      }
+      userId = parsedInput.userId;
       console.log(`5a. Using user ID from request: ${userId}`);
     } else {
       return Response.json({ message: "Either userId or accountNumber must be provided" }, { status: 400 });
@@ -84,7 +81,7 @@ export async function POST(request: NextRequest) {
     console.log("7. Transaction created successfully:", tx.id);
 
     // Update User Balance
-    const user = await adminStorage.getUser(userId);
+    const user = await adminStorage.getUserByUuid(userId);
     if (user) {
       const currentBalance = parseFloat(user.balance);
       const amount = parseFloat(parsedInput.amount);
@@ -93,7 +90,7 @@ export async function POST(request: NextRequest) {
         : (currentBalance - amount).toFixed(2);
 
       console.log(`8. Updating balance for user ${user.id}: ${currentBalance} -> ${newBalance}`);
-      await adminStorage.updateUserBalance(user.id, newBalance);
+      await adminStorage.updateUserBalanceByUuid(userId, newBalance);
     }
 
     console.log("9. Transaction completed successfully");

@@ -25,17 +25,31 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     });
   }
 
-  const userId = parseInt(awaitedParams.id);
+  // Debug: Log the incoming ID
+  console.log("Received ID for approval:", awaitedParams.id);
 
-  if (!userId || isNaN(userId)) {
-    return new Response(JSON.stringify({ message: "Invalid user ID" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" }
-    });
+  // The database ID is a UUID, so try to find user by UUID first
+  let user: any;
+  const idParam = awaitedParams.id;
+  
+  // First, try to find user by UUID (database ID)
+  user = await adminStorage.updateUserStatusByUuid(idParam, "APPROVED");
+  
+  // If not found by UUID, try customer ID
+  if (!user) {
+    console.log("No user found by UUID, trying customer ID:", idParam);
+    const foundUser = await adminStorage.getUserByCustomerId(idParam);
+    if (foundUser) {
+      console.log("Found user by customer ID, updating status for DB ID:", foundUser.id);
+      // Use the UUID from foundUser.id to update status
+      user = await adminStorage.updateUserStatusByUuid(foundUser.id, "APPROVED");
+    } else {
+      console.log("No user found with customer ID:", idParam);
+    }
   }
 
-  const user = await adminStorage.updateUserStatus(userId, "APPROVED");
   if (!user) {
+    console.log("User not found for ID:", idParam);
     return new Response(JSON.stringify({ message: "User not found" }), {
       status: 404,
       headers: { "Content-Type": "application/json" }
@@ -45,8 +59,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   // Generate account number if not exists
   if (!user.accountNumber) {
     const accNum = generateAccountNumber();
-    await adminStorage.updateUserAccountNumber(userId, accNum);
+    await adminStorage.updateUserAccountNumber(user.id, accNum);
   }
 
+  console.log("Successfully approved user:", user.id);
   return Response.json(user);
 }

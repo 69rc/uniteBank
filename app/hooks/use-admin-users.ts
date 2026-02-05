@@ -19,7 +19,7 @@ export function useApproveUser() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (userId: number) => {
+    mutationFn: async (userId: string) => {
       const url = buildUrl(api.admin.approveUser.path, { id: userId });
       const res = await fetch(url, { method: "POST" });
       if (!res.ok) throw new Error("Failed to approve user");
@@ -40,7 +40,7 @@ export function useRejectUser() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (userId: number) => {
+    mutationFn: async (userId: string) => {
       const url = buildUrl(api.admin.rejectUser.path, { id: userId });
       const res = await fetch(url, { method: "POST" });
       if (!res.ok) throw new Error("Failed to reject user");

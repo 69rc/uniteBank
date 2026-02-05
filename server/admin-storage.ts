@@ -4,15 +4,20 @@ import { User, Transaction } from '@shared/schema';
 export interface IStorage {
   // Users
   getUser(id: number): Promise<User | undefined>;
+  getUserByUuid(uuid: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByAccountNumber(accountNumber: string): Promise<User | undefined>;
+  getUserByCustomerId(customerId: string): Promise<User | undefined>;
   createUser(user: any): Promise<User>;
   updateUserStatus(id: number, status: "PENDING" | "APPROVED" | "REJECTED"): Promise<User | undefined>;
+  updateUserStatusByUuid(uuid: string, status: "PENDING" | "APPROVED" | "REJECTED"): Promise<User | undefined>;
   updateUserBalance(id: number, balance: string): Promise<User | undefined>;
+  updateUserBalanceByUuid(uuid: string, balance: string): Promise<User | undefined>;
   getAllUsers(): Promise<User[]>;
   updateUserAccountNumber(id: number, accountNumber: string): Promise<User | undefined>;
   verifyUserEmail(email: string): Promise<void>;
   updateUserPassword(id: number, password: string): Promise<void>;
+  updateUserPasswordByUuid(uuid: string, password: string): Promise<void>;
 
   // OTPs
   createOtp(email: string, code: string, purpose?: "EMAIL_VERIFICATION" | "PASSWORD_RESET"): Promise<void>;
@@ -21,6 +26,7 @@ export interface IStorage {
   // Transactions
   createTransaction(transaction: any): Promise<Transaction>;
   getTransactionsByUserId(userId: number): Promise<Transaction[]>;
+  getTransactionsByUserUuid(uuid: string): Promise<Transaction[]>;
   getAllTransactions(): Promise<Transaction[]>;
 }
 
@@ -244,12 +250,110 @@ export class SupabaseAdminStorage implements IStorage {
     return undefined;
   }
 
+  async updateUserStatusByUuid(uuid: string, status: "PENDING" | "APPROVED" | "REJECTED"): Promise<User | undefined> {
+    const adminClient = await createAdminSupabaseClient();
+    const { data, error } = await adminClient
+      .from('users')
+      .update({ status })
+      .eq('id', uuid)
+      .select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        "isEmailVerified",
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `)
+      .single();
+
+    if (error) throw error;
+    // Transform snake_case response to camelCase to match schema
+    if (data) {
+      return snakeToCamel(data) as User;
+    }
+    return undefined;
+  }
+
   async updateUserBalance(id: number, balance: string): Promise<User | undefined> {
     const adminClient = await createAdminSupabaseClient();
     const { data, error } = await adminClient
       .from('users')
       .update({ balance })
       .eq('id', id)
+      .select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        "isEmailVerified",
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `)
+      .single();
+
+    if (error) throw error;
+    // Transform snake_case response to camelCase to match schema
+    if (data) {
+      return snakeToCamel(data) as User;
+    }
+    return undefined;
+  }
+
+  async updateUserBalanceByUuid(uuid: string, balance: string): Promise<User | undefined> {
+    const adminClient = await createAdminSupabaseClient();
+    const { data, error } = await adminClient
+      .from('users')
+      .update({ balance })
+      .eq('id', uuid)
       .select(`
         id,
         first_name,
@@ -362,6 +466,16 @@ export class SupabaseAdminStorage implements IStorage {
     if (error) throw error;
   }
 
+  async updateUserPasswordByUuid(uuid: string, password: string): Promise<void> {
+    const adminClient = await createAdminSupabaseClient();
+    const { error } = await adminClient
+      .from('users')
+      .update({ password })
+      .eq('id', uuid);
+
+    if (error) throw error;
+  }
+
   async getUserByAccountNumber(accountNumber: string): Promise<User | undefined> {
     const adminClient = await createAdminSupabaseClient();
     const { data, error } = await adminClient
@@ -400,6 +514,102 @@ export class SupabaseAdminStorage implements IStorage {
         created_at
       `)
       .eq('account_number', accountNumber)
+      .single();
+
+    if (error) throw error;
+    // Transform snake_case response to camelCase to match schema
+    if (data) {
+      return snakeToCamel(data) as User;
+    }
+    return undefined;
+  }
+
+  async getUserByCustomerId(customerId: string): Promise<User | undefined> {
+    const adminClient = await createAdminSupabaseClient();
+    const { data, error } = await adminClient
+      .from('users')
+      .select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        "isEmailVerified",
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `)
+      .eq('customer_id', customerId)
+      .single();
+
+    if (error) throw error;
+    // Transform snake_case response to camelCase to match schema
+    if (data) {
+      return snakeToCamel(data) as User;
+    }
+    return undefined;
+  }
+
+  async getUserByUuid(uuid: string): Promise<User | undefined> {
+    const adminClient = await createAdminSupabaseClient();
+    const { data, error } = await adminClient
+      .from('users')
+      .select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        "isEmailVerified",
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `)
+      .eq('id', uuid)
       .single();
 
     if (error) throw error;
@@ -508,6 +718,27 @@ export class SupabaseAdminStorage implements IStorage {
         created_at
       `)
       .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    // Transform snake_case response to camelCase to match schema
+    return data?.map(snakeToCamel) as Transaction[] || [];
+  }
+
+  async getTransactionsByUserUuid(uuid: string): Promise<Transaction[]> {
+    const adminClient = await createAdminSupabaseClient();
+    const { data, error } = await adminClient
+      .from('transactions')
+      .select(`
+        id,
+        user_id,
+        type,
+        amount,
+        description,
+        created_by,
+        created_at
+      `)
+      .eq('user_id', uuid)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -668,11 +899,108 @@ export class SupabasePublicStorage implements IStorage {
     return data ? snakeToCamel(data) : undefined;
   }
 
+  async getUserByCustomerId(customerId: string): Promise<User | undefined> {
+    const { data, error } = await supabase
+      .from('users')
+      .select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        "isEmailVerified",
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `)
+      .eq('customer_id', customerId)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data ? snakeToCamel(data) : undefined;
+  }
+
+  async getUserByUuid(uuid: string): Promise<User | undefined> {
+    const { data, error } = await supabase
+      .from('users')
+      .select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        "isEmailVerified",
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `)
+      .eq('id', uuid)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data ? snakeToCamel(data) : undefined;
+  }
+
   async getTransactionsByUserId(userId: number): Promise<Transaction[]> {
     const { data, error } = await supabase
       .from('transactions')
       .select('*')
       .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data?.map(snakeToCamel) as Transaction[] || [];
+  }
+
+  async getTransactionsByUserUuid(uuid: string): Promise<Transaction[]> {
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('user_id', uuid)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -688,7 +1016,15 @@ export class SupabasePublicStorage implements IStorage {
     throw new Error("Update user status requires admin privileges");
   }
 
+  async updateUserStatusByUuid(uuid: string, status: "PENDING" | "APPROVED" | "REJECTED"): Promise<User | undefined> {
+    throw new Error("Update user status requires admin privileges");
+  }
+
   async updateUserBalance(id: number, balance: string): Promise<User | undefined> {
+    throw new Error("Update user balance requires admin privileges");
+  }
+
+  async updateUserBalanceByUuid(uuid: string, balance: string): Promise<User | undefined> {
     throw new Error("Update user balance requires admin privileges");
   }
 
@@ -705,6 +1041,10 @@ export class SupabasePublicStorage implements IStorage {
   }
 
   async updateUserPassword(id: number, password: string): Promise<void> {
+    throw new Error("Update password requires admin privileges");
+  }
+
+  async updateUserPasswordByUuid(uuid: string, password: string): Promise<void> {
     throw new Error("Update password requires admin privileges");
   }
 

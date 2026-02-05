@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 
 // Mock session storage - in production you might use Redis, DB, or JWT
 // Note: This in-memory storage is not suitable for serverless/production environments.
-type SessionRecord = { userId: number; createdAt: Date };
+type SessionRecord = { userId: string; createdAt: Date };
 const globalForSessions = globalThis as typeof globalThis & {
   __SESSION_STORE__?: Map<string, SessionRecord>;
 };
@@ -40,7 +40,7 @@ export async function getCurrentUserFromRequest(request: Request) {
   }
 
   // In a real implementation, you would fetch user from your DB
-  const user = await adminStorage.getUser(session.userId);
+  const user = await adminStorage.getUserByUuid(session.userId);
   return user;
 }
 
@@ -60,14 +60,14 @@ function getSessionIdFromRequest(request: Request): string | undefined {
 }
 
 // Function to create session ID
-export function createSessionId(userId: number): string {
+export function createSessionId(userId: string): string {
   const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   mockSessions.set(sessionId, { userId, createdAt: new Date() });
   return sessionId;
 }
 
 // Function to create session and set cookie
-export async function createSession(userId: number) {
+export async function createSession(userId: string) {
   const sessionId = createSessionId(userId);
   const cookieStore = await cookies();
   cookieStore.set('sessionId', sessionId, {

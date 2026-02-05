@@ -18,6 +18,6 @@ export async function GET(request: NextRequest) {
       headers: { "Content-Type": "application/json" }
     });
   }
-  const txs = await publicStorage.getTransactionsByUserId(user.id);
+  const txs = await publicStorage.getTransactionsByUserUuid(user.id);
   return Response.json(txs);
 }

@@ -3,7 +3,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
+  id: text("id").primaryKey(), // UUID in database
   firstName: text("first_name").notNull(),
   lastName: text("last_name").notNull(),
   otherName: text("other_name"),
@@ -57,7 +57,7 @@ export const otps = pgTable("otps", {
 
 export const transactions = pgTable("transactions", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(),
+  userId: text("user_id").references(() => users.id).notNull(), // UUID reference
   type: text("type", { enum: ["CREDIT", "DEBIT"] }).notNull(),
   amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
   description: text("description").notNull(),

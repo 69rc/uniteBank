@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { api } from '@shared/routes';
 import { adminStorage } from '@server/storage';
 import { comparePasswords } from '../../utils/auth';
-import { createSessionId } from '@lib/auth';
+import { createSession } from '@lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,15 +22,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Create session for the user
-    const sessionId = createSessionId(user.id);
-
-    // Create response with session cookie in headers
-    const headers = new Headers();
-    headers.append('Set-Cookie', `sessionId=${sessionId}; HttpOnly; Path=/; ${process.env.NODE_ENV === 'production' ? 'Secure;' : ''} Max-Age=${60 * 60 * 24 * 7}`);
+    const sessionId = await createSession(user.id);
 
     return new Response(JSON.stringify(user), {
       status: 200,
-      headers,
       statusText: 'OK'
     });
   } catch (err: any) {

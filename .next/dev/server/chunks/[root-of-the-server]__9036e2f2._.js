@@ -57,7 +57,6 @@ __turbopack_context__.s([
 var __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$drizzle$2d$orm$2f$pg$2d$core$2f$table$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Documents/uniteBank/node_modules/drizzle-orm/pg-core/table.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$drizzle$2d$orm$2f$pg$2d$core$2f$columns$2f$text$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Documents/uniteBank/node_modules/drizzle-orm/pg-core/columns/text.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$drizzle$2d$orm$2f$pg$2d$core$2f$columns$2f$serial$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Documents/uniteBank/node_modules/drizzle-orm/pg-core/columns/serial.js [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$drizzle$2d$orm$2f$pg$2d$core$2f$columns$2f$integer$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Documents/uniteBank/node_modules/drizzle-orm/pg-core/columns/integer.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$drizzle$2d$orm$2f$pg$2d$core$2f$columns$2f$boolean$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Documents/uniteBank/node_modules/drizzle-orm/pg-core/columns/boolean.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$drizzle$2d$orm$2f$pg$2d$core$2f$columns$2f$timestamp$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Documents/uniteBank/node_modules/drizzle-orm/pg-core/columns/timestamp.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$drizzle$2d$orm$2f$pg$2d$core$2f$columns$2f$numeric$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Documents/uniteBank/node_modules/drizzle-orm/pg-core/columns/numeric.js [app-route] (ecmascript)");
@@ -69,7 +68,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$no
 ;
 ;
 const users = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$drizzle$2d$orm$2f$pg$2d$core$2f$table$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["pgTable"])("users", {
-    id: (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$drizzle$2d$orm$2f$pg$2d$core$2f$columns$2f$serial$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["serial"])("id").primaryKey(),
+    id: (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$drizzle$2d$orm$2f$pg$2d$core$2f$columns$2f$text$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["text"])("id").primaryKey(),
     firstName: (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$drizzle$2d$orm$2f$pg$2d$core$2f$columns$2f$text$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["text"])("first_name").notNull(),
     lastName: (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$drizzle$2d$orm$2f$pg$2d$core$2f$columns$2f$text$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["text"])("last_name").notNull(),
     otherName: (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$drizzle$2d$orm$2f$pg$2d$core$2f$columns$2f$text$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["text"])("other_name"),
@@ -139,7 +138,7 @@ const otps = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$un
 });
 const transactions = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$drizzle$2d$orm$2f$pg$2d$core$2f$table$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["pgTable"])("transactions", {
     id: (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$drizzle$2d$orm$2f$pg$2d$core$2f$columns$2f$serial$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["serial"])("id").primaryKey(),
-    userId: (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$drizzle$2d$orm$2f$pg$2d$core$2f$columns$2f$integer$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["integer"])("user_id").references(()=>users.id).notNull(),
+    userId: (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$drizzle$2d$orm$2f$pg$2d$core$2f$columns$2f$text$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["text"])("user_id").references(()=>users.id).notNull(),
     type: (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$drizzle$2d$orm$2f$pg$2d$core$2f$columns$2f$text$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["text"])("type", {
         enum: [
             "CREDIT",
@@ -616,11 +615,99 @@ class SupabaseAdminStorage {
         }
         return undefined;
     }
+    async updateUserStatusByUuid(uuid, status) {
+        const adminClient = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createAdminSupabaseClient"])();
+        const { data, error } = await adminClient.from('users').update({
+            status
+        }).eq('id', uuid).select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        "isEmailVerified",
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `).single();
+        if (error) throw error;
+        // Transform snake_case response to camelCase to match schema
+        if (data) {
+            return snakeToCamel(data);
+        }
+        return undefined;
+    }
     async updateUserBalance(id, balance) {
         const adminClient = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createAdminSupabaseClient"])();
         const { data, error } = await adminClient.from('users').update({
             balance
         }).eq('id', id).select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        "isEmailVerified",
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `).single();
+        if (error) throw error;
+        // Transform snake_case response to camelCase to match schema
+        if (data) {
+            return snakeToCamel(data);
+        }
+        return undefined;
+    }
+    async updateUserBalanceByUuid(uuid, balance) {
+        const adminClient = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createAdminSupabaseClient"])();
+        const { data, error } = await adminClient.from('users').update({
+            balance
+        }).eq('id', uuid).select(`
         id,
         first_name,
         last_name,
@@ -718,6 +805,13 @@ class SupabaseAdminStorage {
         }).eq('id', id);
         if (error) throw error;
     }
+    async updateUserPasswordByUuid(uuid, password) {
+        const adminClient = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createAdminSupabaseClient"])();
+        const { error } = await adminClient.from('users').update({
+            password
+        }).eq('id', uuid);
+        if (error) throw error;
+    }
     async getUserByAccountNumber(accountNumber) {
         const adminClient = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createAdminSupabaseClient"])();
         const { data, error } = await adminClient.from('users').select(`
@@ -753,6 +847,90 @@ class SupabaseAdminStorage {
         balance,
         created_at
       `).eq('account_number', accountNumber).single();
+        if (error) throw error;
+        // Transform snake_case response to camelCase to match schema
+        if (data) {
+            return snakeToCamel(data);
+        }
+        return undefined;
+    }
+    async getUserByCustomerId(customerId) {
+        const adminClient = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createAdminSupabaseClient"])();
+        const { data, error } = await adminClient.from('users').select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        "isEmailVerified",
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `).eq('customer_id', customerId).single();
+        if (error) throw error;
+        // Transform snake_case response to camelCase to match schema
+        if (data) {
+            return snakeToCamel(data);
+        }
+        return undefined;
+    }
+    async getUserByUuid(uuid) {
+        const adminClient = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createAdminSupabaseClient"])();
+        const { data, error } = await adminClient.from('users').select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        "isEmailVerified",
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `).eq('id', uuid).single();
         if (error) throw error;
         // Transform snake_case response to camelCase to match schema
         if (data) {
@@ -836,6 +1014,23 @@ class SupabaseAdminStorage {
         created_by,
         created_at
       `).eq('user_id', userId).order('created_at', {
+            ascending: false
+        });
+        if (error) throw error;
+        // Transform snake_case response to camelCase to match schema
+        return data?.map(snakeToCamel) || [];
+    }
+    async getTransactionsByUserUuid(uuid) {
+        const adminClient = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createAdminSupabaseClient"])();
+        const { data, error } = await adminClient.from('transactions').select(`
+        id,
+        user_id,
+        type,
+        amount,
+        description,
+        created_by,
+        created_at
+      `).eq('user_id', uuid).order('created_at', {
             ascending: false
         });
         if (error) throw error;
@@ -973,8 +1168,89 @@ class SupabasePublicStorage {
         if (error) throw error;
         return data ? snakeToCamel(data) : undefined;
     }
+    async getUserByCustomerId(customerId) {
+        const { data, error } = await __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["supabase"].from('users').select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        "isEmailVerified",
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `).eq('customer_id', customerId).maybeSingle();
+        if (error) throw error;
+        return data ? snakeToCamel(data) : undefined;
+    }
+    async getUserByUuid(uuid) {
+        const { data, error } = await __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["supabase"].from('users').select(`
+        id,
+        first_name,
+        last_name,
+        other_name,
+        email,
+        phone,
+        dob,
+        gender,
+        nationality,
+        address,
+        city,
+        state,
+        country,
+        zip_code,
+        id_type,
+        id_number,
+        id_expiry_date,
+        id_image_url,
+        selfie_url,
+        account_type,
+        currency,
+        account_purpose,
+        password,
+        transaction_pin,
+        role,
+        status,
+        "isEmailVerified",
+        account_number,
+        customer_id,
+        balance,
+        created_at
+      `).eq('id', uuid).maybeSingle();
+        if (error) throw error;
+        return data ? snakeToCamel(data) : undefined;
+    }
     async getTransactionsByUserId(userId) {
         const { data, error } = await __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["supabase"].from('transactions').select('*').eq('user_id', userId).order('created_at', {
+            ascending: false
+        });
+        if (error) throw error;
+        return data?.map(snakeToCamel) || [];
+    }
+    async getTransactionsByUserUuid(uuid) {
+        const { data, error } = await __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["supabase"].from('transactions').select('*').eq('user_id', uuid).order('created_at', {
             ascending: false
         });
         if (error) throw error;
@@ -987,7 +1263,13 @@ class SupabasePublicStorage {
     async updateUserStatus(id, status) {
         throw new Error("Update user status requires admin privileges");
     }
+    async updateUserStatusByUuid(uuid, status) {
+        throw new Error("Update user status requires admin privileges");
+    }
     async updateUserBalance(id, balance) {
+        throw new Error("Update user balance requires admin privileges");
+    }
+    async updateUserBalanceByUuid(uuid, balance) {
         throw new Error("Update user balance requires admin privileges");
     }
     async getAllUsers() {
@@ -1000,6 +1282,9 @@ class SupabasePublicStorage {
         throw new Error("Verify email requires admin privileges");
     }
     async updateUserPassword(id, password) {
+        throw new Error("Update password requires admin privileges");
+    }
+    async updateUserPasswordByUuid(uuid, password) {
         throw new Error("Update password requires admin privileges");
     }
     async createOtp(email, code, purpose) {
@@ -1120,7 +1405,7 @@ async function getCurrentUserFromRequest(request) {
         return null;
     }
     // In a real implementation, you would fetch user from your DB
-    const user = await __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$server$2f$admin$2d$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["adminStorage"].getUser(session.userId);
+    const user = await __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$server$2f$admin$2d$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["adminStorage"].getUserByUuid(session.userId);
     return user;
 }
 // Helper function to extract session ID from request
@@ -1195,21 +1480,24 @@ async function POST(request) {
             });
         }
         console.log(user);
-        if (!user.isEmailVerified) {
+        if (user.status === "PENDING") {
             return Response.json({
-                message: "Email not verified"
+                message: "Account pending admin approval"
             }, {
-                status: 401
+                status: 403
+            });
+        }
+        if (user.status === "REJECTED") {
+            return Response.json({
+                message: "Account rejected. Contact support."
+            }, {
+                status: 403
             });
         }
         // Create session for the user
-        const sessionId = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$auth$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createSessionId"])(user.id);
-        // Create response with session cookie in headers
-        const headers = new Headers();
-        headers.append('Set-Cookie', `sessionId=${sessionId}; HttpOnly; Path=/; ${("TURBOPACK compile-time falsy", 0) ? "TURBOPACK unreachable" : ''} Max-Age=${60 * 60 * 24 * 7}`);
+        const sessionId = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$auth$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createSession"])(user.id);
         return new Response(JSON.stringify(user), {
             status: 200,
-            headers,
             statusText: 'OK'
         });
     } catch (err) {

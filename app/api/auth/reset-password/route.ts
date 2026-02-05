@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     const hashedPassword = await hashPassword(newPassword);
-    await adminStorage.updateUserPassword(user.id, hashedPassword);
+    await adminStorage.updateUserPasswordByUuid(user.id, hashedPassword);
 
     return Response.json({ message: "Password updated. You can now login." }, { status: 200 });
   } catch (err: any) {
