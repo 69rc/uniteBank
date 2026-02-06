@@ -3175,9 +3175,14 @@ function CreateTransactionDialog() {
                                                 }, void 0),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Select"], {
                                                     onValueChange: (value)=>{
-                                                        field.onChange(value === "" ? undefined : value);
-                                                        // Clear account number when user is selected
-                                                        form.setValue('accountNumber', undefined);
+                                                        const nextValue = value === "" ? undefined : value;
+                                                        field.onChange(nextValue);
+                                                        if (nextValue) {
+                                                            const selectedUser = approvedUsers.find((u)=>u.id.toString() === nextValue);
+                                                            form.setValue('accountNumber', selectedUser?.accountNumber || "");
+                                                        } else {
+                                                            form.setValue('accountNumber', undefined);
+                                                        }
                                                     },
                                                     value: field.value ?? "",
                                                     children: [
@@ -3187,17 +3192,17 @@ function CreateTransactionDialog() {
                                                                     placeholder: "Select a customer by name"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                                    lineNumber: 124,
+                                                                    lineNumber: 129,
                                                                     columnNumber: 25
                                                                 }, void 0)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                                lineNumber: 123,
+                                                                lineNumber: 128,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         }, void 0, false, {
                                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                            lineNumber: 122,
+                                                            lineNumber: 127,
                                                             columnNumber: 21
                                                         }, void 0),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectContent"], {
@@ -3214,12 +3219,12 @@ function CreateTransactionDialog() {
                                                                     ]
                                                                 }, user.id, true, {
                                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                                    lineNumber: 129,
+                                                                    lineNumber: 134,
                                                                     columnNumber: 25
                                                                 }, void 0))
                                                         }, void 0, false, {
                                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                            lineNumber: 127,
+                                                            lineNumber: 132,
                                                             columnNumber: 21
                                                         }, void 0)
                                                     ]
@@ -3230,7 +3235,7 @@ function CreateTransactionDialog() {
                                                 }, void 0),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                    lineNumber: 135,
+                                                    lineNumber: 140,
                                                     columnNumber: 19
                                                 }, void 0)
                                             ]
@@ -3253,12 +3258,12 @@ function CreateTransactionDialog() {
                                                 className: "w-full border-t border-gray-300"
                                             }, void 0, false, {
                                                 fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                lineNumber: 143,
+                                                lineNumber: 148,
                                                 columnNumber: 17
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                            lineNumber: 142,
+                                            lineNumber: 147,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3266,13 +3271,13 @@ function CreateTransactionDialog() {
                                             children: "Or"
                                         }, void 0, false, {
                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                            lineNumber: 145,
+                                            lineNumber: 150,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                    lineNumber: 141,
+                                    lineNumber: 146,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormField"], {
@@ -3284,7 +3289,7 @@ function CreateTransactionDialog() {
                                                     children: "Recipient Account Number"
                                                 }, void 0, false, {
                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                    lineNumber: 156,
+                                                    lineNumber: 161,
                                                     columnNumber: 19
                                                 }, void 0),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -3299,28 +3304,28 @@ function CreateTransactionDialog() {
                                                         }
                                                     }, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                        lineNumber: 158,
+                                                        lineNumber: 163,
                                                         columnNumber: 21
                                                     }, void 0)
                                                 }, void 0, false, {
                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                    lineNumber: 157,
+                                                    lineNumber: 162,
                                                     columnNumber: 19
                                                 }, void 0),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                    lineNumber: 169,
+                                                    lineNumber: 174,
                                                     columnNumber: 19
                                                 }, void 0)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                            lineNumber: 155,
+                                            lineNumber: 160,
                                             columnNumber: 17
                                         }, void 0)
                                 }, void 0, false, {
                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                    lineNumber: 151,
+                                    lineNumber: 156,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3335,7 +3340,7 @@ function CreateTransactionDialog() {
                                                             children: "Type"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                            lineNumber: 180,
+                                                            lineNumber: 185,
                                                             columnNumber: 21
                                                         }, void 0),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Select"], {
@@ -3346,17 +3351,17 @@ function CreateTransactionDialog() {
                                                                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectTrigger"], {
                                                                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectValue"], {}, void 0, false, {
                                                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                                            lineNumber: 184,
+                                                                            lineNumber: 189,
                                                                             columnNumber: 27
                                                                         }, void 0)
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                                        lineNumber: 183,
+                                                                        lineNumber: 188,
                                                                         columnNumber: 25
                                                                     }, void 0)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                                    lineNumber: 182,
+                                                                    lineNumber: 187,
                                                                     columnNumber: 23
                                                                 }, void 0),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectContent"], {
@@ -3366,7 +3371,7 @@ function CreateTransactionDialog() {
                                                                             children: "Credit (Deposit)"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                                            lineNumber: 188,
+                                                                            lineNumber: 193,
                                                                             columnNumber: 25
                                                                         }, void 0),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectItem"], {
@@ -3374,35 +3379,35 @@ function CreateTransactionDialog() {
                                                                             children: "Debit (Withdrawal)"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                                            lineNumber: 189,
+                                                                            lineNumber: 194,
                                                                             columnNumber: 25
                                                                         }, void 0)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                                    lineNumber: 187,
+                                                                    lineNumber: 192,
                                                                     columnNumber: 23
                                                                 }, void 0)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                            lineNumber: 181,
+                                                            lineNumber: 186,
                                                             columnNumber: 21
                                                         }, void 0),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                            lineNumber: 192,
+                                                            lineNumber: 197,
                                                             columnNumber: 21
                                                         }, void 0)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                    lineNumber: 179,
+                                                    lineNumber: 184,
                                                     columnNumber: 19
                                                 }, void 0)
                                         }, void 0, false, {
                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                            lineNumber: 175,
+                                            lineNumber: 180,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormField"], {
@@ -3414,7 +3419,7 @@ function CreateTransactionDialog() {
                                                             children: "Amount ($)"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                            lineNumber: 202,
+                                                            lineNumber: 207,
                                                             columnNumber: 21
                                                         }, void 0),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -3427,34 +3432,34 @@ function CreateTransactionDialog() {
                                                                 onChange: field.onChange
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                                lineNumber: 204,
+                                                                lineNumber: 209,
                                                                 columnNumber: 23
                                                             }, void 0)
                                                         }, void 0, false, {
                                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                            lineNumber: 203,
+                                                            lineNumber: 208,
                                                             columnNumber: 21
                                                         }, void 0),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                            lineNumber: 213,
+                                                            lineNumber: 218,
                                                             columnNumber: 21
                                                         }, void 0)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                    lineNumber: 201,
+                                                    lineNumber: 206,
                                                     columnNumber: 19
                                                 }, void 0)
                                         }, void 0, false, {
                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                            lineNumber: 197,
+                                            lineNumber: 202,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                    lineNumber: 174,
+                                    lineNumber: 179,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormField"], {
@@ -3466,7 +3471,7 @@ function CreateTransactionDialog() {
                                                     children: "Description"
                                                 }, void 0, false, {
                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                    lineNumber: 224,
+                                                    lineNumber: 229,
                                                     columnNumber: 19
                                                 }, void 0),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -3475,28 +3480,28 @@ function CreateTransactionDialog() {
                                                         ...field
                                                     }, void 0, false, {
                                                         fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                        lineNumber: 226,
+                                                        lineNumber: 231,
                                                         columnNumber: 21
                                                     }, void 0)
                                                 }, void 0, false, {
                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                    lineNumber: 225,
+                                                    lineNumber: 230,
                                                     columnNumber: 19
                                                 }, void 0),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                                    lineNumber: 228,
+                                                    lineNumber: 233,
                                                     columnNumber: 19
                                                 }, void 0)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                            lineNumber: 223,
+                                            lineNumber: 228,
                                             columnNumber: 17
                                         }, void 0)
                                 }, void 0, false, {
                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                    lineNumber: 219,
+                                    lineNumber: 224,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$app$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -3506,7 +3511,7 @@ function CreateTransactionDialog() {
                                     children: isPending ? "Processing..." : "Process Transaction"
                                 }, void 0, false, {
                                     fileName: "[project]/Documents/uniteBank/app/components/transactions/transaction-dialog.tsx",
-                                    lineNumber: 233,
+                                    lineNumber: 238,
                                     columnNumber: 13
                                 }, this)
                             ]

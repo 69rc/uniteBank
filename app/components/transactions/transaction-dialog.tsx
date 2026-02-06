@@ -113,9 +113,14 @@ export function CreateTransactionDialog() {
                   <FormLabel>Select User (Optional)</FormLabel>
                   <Select
                     onValueChange={(value) => {
-                      field.onChange(value === "" ? undefined : value);
-                      // Clear account number when user is selected
-                      form.setValue('accountNumber', undefined);
+                      const nextValue = value === "" ? undefined : value;
+                      field.onChange(nextValue);
+                      if (nextValue) {
+                        const selectedUser = approvedUsers.find((u) => u.id.toString() === nextValue);
+                        form.setValue('accountNumber', selectedUser?.accountNumber || "");
+                      } else {
+                        form.setValue('accountNumber', undefined);
+                      }
                     }}
                     value={field.value ?? ""}
                   >

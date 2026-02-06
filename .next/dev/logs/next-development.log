@@ -142,3 +142,39 @@ See this log for the ancestor stack trace. p <div>
 [02:58:52.941] Server  LOG     ✓ Compiled in 480ms
 [03:00:39.655] Server  LOG     {}
 [03:01:28.782] Server  LOG     ✓ Compiled in 275ms
+[03:14:37.901] Server  LOG     {}
+[03:14:45.232] Browser WARN    Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+[03:14:45.232] Browser WARN    Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+[03:14:58.982] Server  LOG     === TRANSACTION CREATION DEBUG ===
+[03:14:58.984] Server  LOG     1. Request received
+[03:14:58.985] Server  LOG     2. Admin check passed
+[03:14:58.986] Server  LOG     3. Raw request body: "{\n  \"amount\": \"10\",\n  \"type\": \"CREDIT\",\n  \"description\": \"sales\",\n  \"accountNumber\": \"2029 4128 9016\"\n}"
+[03:14:58.986] Server  LOG     4. Starting input parsing...
+[03:14:58.993] Server  LOG     5. Input parsed successfully: "{\n  \"type\": \"CREDIT\",\n  \"amount\": \"10\",\n  \"description\": \"sales\",\n  \"accountNumber\": \"2029 4128 9016\"\n}"
+[03:14:59.381] Server  ERROR   === TRANSACTION ERROR ===
+[03:14:59.382] Server  ERROR   Error occurred: {}
+[03:14:59.383] Server  ERROR   Error message: "Cannot coerce the result to a single JSON object"
+[03:15:17.077] Server  LOG     === TRANSACTION CREATION DEBUG ===
+[03:15:17.078] Server  LOG     1. Request received
+[03:15:17.078] Server  LOG     2. Admin check passed
+[03:15:17.079] Server  LOG     3. Raw request body: "{\n  \"amount\": \"10\",\n  \"type\": \"CREDIT\",\n  \"description\": \"sales\",\n  \"accountNumber\": \"2029 4128 9016\"\n}"
+[03:15:17.080] Server  LOG     4. Starting input parsing...
+[03:15:17.082] Server  LOG     5. Input parsed successfully: "{\n  \"type\": \"CREDIT\",\n  \"amount\": \"10\",\n  \"description\": \"sales\",\n  \"accountNumber\": \"2029 4128 9016\"\n}"
+[03:15:17.387] Server  ERROR   === TRANSACTION ERROR ===
+[03:15:17.389] Server  ERROR   Error occurred: {}
+[03:15:17.390] Server  ERROR   Error message: "Cannot coerce the result to a single JSON object"
+[03:16:59.831] Server  LOG     ✓ Compiled in 555ms
+[03:19:39.519] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[03:19:43.029] Browser WARN    Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+[03:19:43.029] Browser WARN    Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+[03:19:57.380] Server  LOG     === TRANSACTION CREATION DEBUG ===
+[03:19:57.382] Server  LOG     1. Request received
+[03:19:57.382] Server  LOG     2. Admin check passed
+[03:19:57.383] Server  LOG     3. Raw request body: "{\n  \"amount\": \"10\",\n  \"type\": \"CREDIT\",\n  \"description\": \"sales\",\n  \"accountNumber\": \"202534434911\"\n}"
+[03:19:57.384] Server  LOG     4. Starting input parsing...
+[03:19:57.385] Server  LOG     5. Input parsed successfully: "{\n  \"type\": \"CREDIT\",\n  \"amount\": \"10\",\n  \"description\": \"sales\",\n  \"accountNumber\": \"202534434911\"\n}"
+[03:19:57.677] Server  LOG     5a. Found user by account number 202534434911: user ID b2021c53-95f8-47e6-b511-436b15c5614f
+[03:19:57.677] Server  LOG     6. Transaction data prepared: "{\n  \"userId\": \"b2021c53-95f8-47e6-b511-436b15c5614f\",\n  \"type\": \"CREDIT\",\n  \"amount\": \"10\",\n  \"description\": \"sales\",\n  \"createdBy\": \"ADMIN\"\n}"
+[03:19:58.041] Server  LOG     7. Transaction created successfully: "d939e781-b939-42a4-9af3-9e2ff41564c3"
+[03:19:58.341] Server  LOG     8. Updating balance for user b2021c53-95f8-47e6-b511-436b15c5614f: 100 -> 110.00
+[03:19:58.689] Server  LOG     9. Transaction completed successfully
