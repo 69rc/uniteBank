@@ -52,3 +52,93 @@
 [01:43:20.057] Server  LOG     ✓ Compiled in 397ms
 [01:43:39.088] Server  LOG     ✓ Compiled in 232ms
 [01:44:19.608] Server  LOG     {}
+[02:10:55.147] Server  LOG     ✓ Compiled in 444ms
+[02:11:20.686] Server  LOG     ✓ Compiled in 295ms
+[02:15:54.129] Server  LOG     Registration input received: "{\n  \"firstName\": \"bashir \",\n  \"lastName\": \"muhamaad \",\n  \"otherName\": \"2\",\n  \"email\": \"bash@bank.com\",\n  \"phone\": \"09017901953\",\n  \"dob\": \"2026-02-05\",\n  \"gender\": \"Female\",\n  \"nationality\": \"usa\",\n  \"address\": \"jaba\",\n  \"city\": \"kano\",\n  \"state\": \"jaba\",\n  \"country\": \"usa\",\n  \"zipCode\": \"900099\",\n  \"idType\": \"Driver License\",\n  \"idNumber\": \"2828292292\",\n  \"idExpiryDate\": \"2026-02-08\",\n  \"accountType\": \"CHECKING\",\n  \"currency\": \"USD\",\n  \"accountPurpose\": \"hedjkkkw\",\n  \"password\": \"12345678\",\n  \"transactionPin\": \"1234\"\n}"
+[02:15:55.179] Server  LOG     Creating user with data: "{\n  \"firstName\": \"bashir \",\n  \"lastName\": \"muhamaad \",\n  \"otherName\": \"2\",\n  \"email\": \"bash@bank.com\",\n  \"phone\": \"09017901953\",\n  \"dob\": \"2026-02-05\",\n  \"gender\": \"Female\",\n  \"nationality\": \"usa\",\n  \"address\": \"jaba\",\n  \"city\": \"kano\",\n  \"state\": \"jaba\",\n  \"country\": \"usa\",\n  \"zipCode\": \"900099\",\n  \"idType\": \"Driver License\",\n  \"idNumber\": \"2828292292\",\n  \"idExpiryDate\": \"2026-02-08\",\n  \"accountType\": \"CHECKING\",\n  \"currency\": \"USD\",\n  \"accountPurpose\": \"hedjkkkw\",\n  \"password\": \"d11df711b50ad2b3d40886851d0ee56e3e21a1154cfc9ee3a571ac38ea6bed5bbe6a39a28ab50dc8a571c10e0b3e21674342a41d43cf59519cb9e976cc8da5f0.48bb1f49d25dc2759012e390c17468c3\",\n  \"transactionPin\": \"1234\",\n  \"accountNumber\": \"202260312887\",\n  \"customerId\": \"CU5990623170839\",\n  \"role\": \"USER\",\n  \"status\": \"PENDING\",\n  \"balance\": \"0.00\",\n  \"isEmailVerified\": true\n}"
+[02:15:55.422] Server  ERROR   Registration error: {}
+[02:41:47.008] Server  LOG     Registration input received: "{\n  \"firstName\": \"bashir \",\n  \"lastName\": \"muhamaad \",\n  \"otherName\": \"2\",\n  \"email\": \"bash@bank.com\",\n  \"phone\": \"09017901953\",\n  \"dob\": \"2026-02-05\",\n  \"gender\": \"Female\",\n  \"nationality\": \"usa\",\n  \"address\": \"jaba\",\n  \"city\": \"kano\",\n  \"state\": \"jaba\",\n  \"country\": \"usa\",\n  \"zipCode\": \"900099\",\n  \"idType\": \"Driver License\",\n  \"idNumber\": \"2828292292\",\n  \"idExpiryDate\": \"2026-02-08\",\n  \"accountType\": \"CHECKING\",\n  \"currency\": \"USD\",\n  \"accountPurpose\": \"hedjkkkw\",\n  \"password\": \"12345678\",\n  \"transactionPin\": \"1234\"\n}"
+[02:41:48.110] Server  LOG     Creating user with data: "{\n  \"firstName\": \"bashir \",\n  \"lastName\": \"muhamaad \",\n  \"otherName\": \"2\",\n  \"email\": \"bash@bank.com\",\n  \"phone\": \"09017901953\",\n  \"dob\": \"2026-02-05\",\n  \"gender\": \"Female\",\n  \"nationality\": \"usa\",\n  \"address\": \"jaba\",\n  \"city\": \"kano\",\n  \"state\": \"jaba\",\n  \"country\": \"usa\",\n  \"zipCode\": \"900099\",\n  \"idType\": \"Driver License\",\n  \"idNumber\": \"2828292292\",\n  \"idExpiryDate\": \"2026-02-08\",\n  \"accountType\": \"CHECKING\",\n  \"currency\": \"USD\",\n  \"accountPurpose\": \"hedjkkkw\",\n  \"password\": \"d454319b599cf728ff427c3834f1a18a9069b4af067b953e5618518bdf34d189d29c8886761047c6a3e0af38242dbefb959b6e84b99c4ededd214d16079fc4ff.0c118d14ffef10ac1af3587006474e99\",\n  \"transactionPin\": \"1234\",\n  \"accountNumber\": \"202534434911\",\n  \"customerId\": \"CU9904128240538\",\n  \"role\": \"USER\",\n  \"status\": \"PENDING\",\n  \"balance\": \"0.00\"\n}"
+[02:42:49.367] Server  LOG     Registration input received: "{\n  \"firstName\": \"\",\n  \"lastName\": \"\",\n  \"otherName\": \"\",\n  \"email\": \"admin2@bank.com\",\n  \"phone\": \"\",\n  \"dob\": \"\",\n  \"gender\": \"\",\n  \"nationality\": \"\",\n  \"address\": \"\",\n  \"city\": \"\",\n  \"state\": \"\",\n  \"country\": \"\",\n  \"zipCode\": \"\",\n  \"idType\": \"\",\n  \"idNumber\": \"\",\n  \"idExpiryDate\": \"\",\n  \"accountType\": \"SAVINGS\",\n  \"currency\": \"USD\",\n  \"accountPurpose\": \"\",\n  \"password\": \"admin123\",\n  \"transactionPin\": \"1234\"\n}"
+[02:42:50.067] Server  LOG     Creating user with data: "{\n  \"firstName\": \"\",\n  \"lastName\": \"\",\n  \"otherName\": \"\",\n  \"email\": \"admin2@bank.com\",\n  \"phone\": \"\",\n  \"dob\": \"\",\n  \"gender\": \"\",\n  \"nationality\": \"\",\n  \"address\": \"\",\n  \"city\": \"\",\n  \"state\": \"\",\n  \"country\": \"\",\n  \"zipCode\": \"\",\n  \"idType\": \"\",\n  \"idNumber\": \"\",\n  \"idExpiryDate\": \"\",\n  \"accountType\": \"SAVINGS\",\n  \"currency\": \"USD\",\n  \"accountPurpose\": \"\",\n  \"password\": \"1338bcead9656207e944c3aaa9d9dbc892c232ea502f1241463e21a456dad863869052ad73b71e11b557ed5461793c9a7b3a6f6eabb7db71edab803bb0409a11.6026ab252caabd13143635abc70d9c2f\",\n  \"transactionPin\": \"1234\",\n  \"accountNumber\": \"202597434978\",\n  \"customerId\": \"CU6484472549562\",\n  \"role\": \"USER\",\n  \"status\": \"PENDING\",\n  \"balance\": \"0.00\"\n}"
+[02:42:50.299] Server  ERROR   Registration error: {}
+[02:43:08.008] Server  LOG     Registration input received: "{\n  \"firstName\": \"bashir \",\n  \"lastName\": \"muhamaad \",\n  \"otherName\": \"2\",\n  \"email\": \"admin2@bank.com\",\n  \"phone\": \"\",\n  \"dob\": \"2026-02-04\",\n  \"gender\": \"\",\n  \"nationality\": \"\",\n  \"address\": \"\",\n  \"city\": \"\",\n  \"state\": \"\",\n  \"country\": \"\",\n  \"zipCode\": \"\",\n  \"idType\": \"\",\n  \"idNumber\": \"\",\n  \"idExpiryDate\": \"2026-02-08\",\n  \"accountType\": \"SAVINGS\",\n  \"currency\": \"USD\",\n  \"accountPurpose\": \"\",\n  \"password\": \"admin123\",\n  \"transactionPin\": \"1234\"\n}"
+[02:43:08.735] Server  LOG     Creating user with data: "{\n  \"firstName\": \"bashir \",\n  \"lastName\": \"muhamaad \",\n  \"otherName\": \"2\",\n  \"email\": \"admin2@bank.com\",\n  \"phone\": \"\",\n  \"dob\": \"2026-02-04\",\n  \"gender\": \"\",\n  \"nationality\": \"\",\n  \"address\": \"\",\n  \"city\": \"\",\n  \"state\": \"\",\n  \"country\": \"\",\n  \"zipCode\": \"\",\n  \"idType\": \"\",\n  \"idNumber\": \"\",\n  \"idExpiryDate\": \"2026-02-08\",\n  \"accountType\": \"SAVINGS\",\n  \"currency\": \"USD\",\n  \"accountPurpose\": \"\",\n  \"password\": \"ac896fecf184db3d4482d5bb9a764ca21030171f5cceb13ffc16f373d96b4b13bcf3c9e1894e43c9b22e0decd7cc063f931b69f3899c050bd6a4e48964abb16a.fba1b9d3d060e76d4dc789603cb21af6\",\n  \"transactionPin\": \"1234\",\n  \"accountNumber\": \"202589478318\",\n  \"customerId\": \"CU5834112713379\",\n  \"role\": \"USER\",\n  \"status\": \"PENDING\",\n  \"balance\": \"0.00\"\n}"
+[02:44:09.038] Server  LOG     {}
+[02:44:21.375] Server  LOG     Received ID for approval: "b2021c53-95f8-47e6-b511-436b15c5614f"
+[02:44:21.778] Server  LOG     Successfully approved user: "b2021c53-95f8-47e6-b511-436b15c5614f"
+[02:44:31.633] Browser WARN    Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+[02:44:31.633] Browser WARN    Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+[02:45:17.597] Server  LOG     === TRANSACTION CREATION DEBUG ===
+[02:45:17.599] Server  LOG     1. Request received
+[02:45:17.599] Server  LOG     2. Admin check passed
+[02:45:17.600] Server  LOG     3. Raw request body: "{\n  \"amount\": \"100\",\n  \"type\": \"CREDIT\",\n  \"description\": \"sales\",\n  \"accountNumber\": \"2828292292\"\n}"
+[02:45:17.600] Server  LOG     4. Starting input parsing...
+[02:45:17.606] Server  LOG     5. Input parsed successfully: "{\n  \"type\": \"CREDIT\",\n  \"amount\": \"100\",\n  \"description\": \"sales\",\n  \"accountNumber\": \"2828292292\"\n}"
+[02:45:18.100] Server  ERROR   === TRANSACTION ERROR ===
+[02:45:18.100] Server  ERROR   Error occurred: {}
+[02:45:18.101] Server  ERROR   Error message: "Cannot coerce the result to a single JSON object"
+[02:45:30.801] Server  LOG     === TRANSACTION CREATION DEBUG ===
+[02:45:30.802] Server  LOG     1. Request received
+[02:45:30.802] Server  LOG     2. Admin check passed
+[02:45:30.804] Server  LOG     3. Raw request body: "{\n  \"amount\": \"100\",\n  \"type\": \"CREDIT\",\n  \"description\": \"sales\",\n  \"accountNumber\": \"2828292292\"\n}"
+[02:45:30.804] Server  LOG     4. Starting input parsing...
+[02:45:30.807] Server  LOG     5. Input parsed successfully: "{\n  \"type\": \"CREDIT\",\n  \"amount\": \"100\",\n  \"description\": \"sales\",\n  \"accountNumber\": \"2828292292\"\n}"
+[02:45:31.234] Server  ERROR   === TRANSACTION ERROR ===
+[02:45:31.235] Server  ERROR   Error occurred: {}
+[02:45:31.235] Server  ERROR   Error message: "Cannot coerce the result to a single JSON object"
+[02:46:59.370] Server  LOG     === TRANSACTION CREATION DEBUG ===
+[02:46:59.372] Server  LOG     1. Request received
+[02:46:59.372] Server  LOG     2. Admin check passed
+[02:46:59.373] Server  LOG     3. Raw request body: "{\n  \"amount\": \"100\",\n  \"type\": \"CREDIT\",\n  \"description\": \"sales\",\n  \"accountNumber\": \"202534434911\"\n}"
+[02:46:59.373] Server  LOG     4. Starting input parsing...
+[02:46:59.374] Server  LOG     5. Input parsed successfully: "{\n  \"type\": \"CREDIT\",\n  \"amount\": \"100\",\n  \"description\": \"sales\",\n  \"accountNumber\": \"202534434911\"\n}"
+[02:46:59.561] Server  LOG     5a. Found user by account number 202534434911: user ID b2021c53-95f8-47e6-b511-436b15c5614f
+[02:46:59.562] Server  LOG     6. Transaction data prepared: "{\n  \"userId\": \"b2021c53-95f8-47e6-b511-436b15c5614f\",\n  \"type\": \"CREDIT\",\n  \"amount\": \"100\",\n  \"description\": \"sales\",\n  \"createdBy\": \"ADMIN\"\n}"
+[02:46:59.852] Server  LOG     7. Transaction created successfully: "158e4b2d-49e5-4b15-b0eb-b534d947852b"
+[02:47:00.047] Server  LOG     8. Updating balance for user b2021c53-95f8-47e6-b511-436b15c5614f: 0 -> 100.00
+[02:47:00.258] Server  LOG     9. Transaction completed successfully
+[02:47:17.363] Server  LOG     {}
+[02:50:17.092] Server  LOG     ✓ Compiled in 771ms
+[02:51:10.910] Server  LOG     ✓ Compiled in 267ms
+[02:51:56.082] Server  LOG     ✓ Compiled in 605ms
+[02:53:03.729] Server  LOG     {}
+[02:53:15.260] Browser ERROR   In HTML, %s cannot be a descendant of <%s>.
+This will cause a hydration error.%s <div> p 
+
+  ...
+    <FocusScope asChild={true} loop={true} trapped={true} onMountAutoFocus={undefined} ...>
+      <Primitive.div tabIndex={-1} asChild={true} ref={function} ...>
+        <Primitive.div.Slot tabIndex={-1} onKeyDown={function FocusScope.useCallback[handleKeyDown]} ref={function}>
+          <Primitive.div.SlotClone tabIndex={-1} onKeyDown={function FocusScope.useCallback[handleKeyDown]} ...>
+            <DismissableLayer role="dialog" id="radix-_r_bc_" aria-describedby="radix-_r_be_" ...>
+              <Primitive.div role="dialog" id="radix-_r_bc_" aria-describedby="radix-_r_be_" ...>
+                <div role="dialog" id="radix-_r_bc_" aria-describedby="radix-_r_be_" aria-labelledby="radix-_r_bd_" ...>
+                  <DialogHeader>
+                    <div className="flex flex-...">
+                      <_c5>
+                      <_c7 className="space-x-2">
+                        <DialogDescription ref={null} className="text-sm te...">
+                          <Primitive.p id="radix-_r_be_" className="text-sm te..." ref={null}>
+>                           <p id="radix-_r_be_" className="text-sm text-muted-foreground space-x-2" ref={null}>
+                              <Badge variant="secondary">
+>                               <div
+>                                 className="whitespace-nowrap inline-flex items-center rounded-md border px-2.5 py-0...."
+>                               >
+                              ...
+                  ...
+                  ...
+    ...
+
+[02:53:15.260] Browser ERROR   <%s> cannot contain a nested %s.
+See this log for the ancestor stack trace. p <div>
+[02:53:41.424] Server  LOG     ✓ Compiled in 224ms
+[02:56:29.519] Server  LOG     {}
+[02:56:57.967] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[02:56:58.676] Server  ERROR   ⨯ {}
+[02:56:58.678] Server  ERROR   ⨯ {}
+[02:56:58.785] Server  ERROR   ⨯ {}
+[02:56:58.790] Browser ERROR   Cannot update a component (`%s`) while rendering a different component (`%s`). To locate the bad setState() call inside `%s`, follow the stack trace as described in https://react.dev/link/setstate-in-render Router Dashboard Dashboard
+[02:58:52.941] Server  LOG     ✓ Compiled in 480ms
+[03:00:39.655] Server  LOG     {}
+[03:01:28.782] Server  LOG     ✓ Compiled in 275ms

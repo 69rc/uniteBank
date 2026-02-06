@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Layout } from "@/components/layout/sidebar";
 import { useTransactions } from "@/hooks/use-transactions";
@@ -20,7 +20,6 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useLocation } from "wouter";
 import { BalanceFlowChart } from "@/components/charts/BalanceFlowChart";
 import { LoansChart } from "@/components/charts/LoansChart";
@@ -69,21 +68,19 @@ export default function Dashboard() {
   const [, setLocation] = useLocation();
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      setLocation("/auth");
+    }
+  }, [authLoading, setLocation, user]);
+
   // Redirect to auth if not authenticated
   if (!authLoading && !user) {
-    setLocation("/auth");
     return null;
   }
 
   if (authLoading || txLoading) {
-    return (
-      <Layout>
-        <div className="space-y-6">
-          <Skeleton className="h-48 w-full rounded-2xl" />
-          <Skeleton className="h-96 w-full rounded-2xl" />
-        </div>
-      </Layout>
-    );
+    return <Layout>{null}</Layout>;
   }
 
   if (user?.status === "PENDING") {
@@ -208,7 +205,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-500">Total Loans</p>
-                <p className="text-2xl font-bold">$295,000</p>
+                <p className="text-2xl font-bold">$0</p>
               </div>
               <div className="p-3 bg-red-100 rounded-full">
                 <Activity className="h-6 w-6 text-red-600" />

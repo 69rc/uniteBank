@@ -39,7 +39,7 @@ export const users = pgTable("users", {
   // Status & Role
   role: text("role", { enum: ["USER", "ADMIN"] }).default("USER").notNull(),
   status: text("status", { enum: ["PENDING", "APPROVED", "REJECTED"] }).default("PENDING").notNull(),
-  isEmailVerified: boolean("isEmailVerified").default(false).notNull(),
+  isEmailVerified: boolean("isEmailVerified").default(true).notNull(),
 
   // Generated fields
   accountNumber: varchar("account_number", { length: 20 }).unique(),
