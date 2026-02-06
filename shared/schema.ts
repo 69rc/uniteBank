@@ -65,6 +65,19 @@ export const transactions = pgTable("transactions", {
   createdBy: text("created_by", { enum: ["SYSTEM", "ADMIN"] }).default("SYSTEM").notNull(),
 });
 
+export const transfers = pgTable("transfers", {
+  id: serial("id").primaryKey(),
+  senderId: text("sender_id").references(() => users.id).notNull(),
+  recipientId: text("recipient_id").references(() => users.id).notNull(),
+  amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+  description: text("description").notNull(),
+  status: text("status", { enum: ["PENDING", "APPROVED", "REJECTED"] }).default("PENDING").notNull(),
+  adminNote: text("admin_note"),
+  approvedBy: text("approved_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  processedAt: timestamp("processed_at"),
+});
+
 // Schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -85,11 +98,22 @@ export const insertTransactionSchema = createInsertSchema(transactions).omit({
   createdAt: true
 });
 
+export const insertTransferSchema = createInsertSchema(transfers).omit({
+  id: true,
+  createdAt: true,
+  processedAt: true,
+  approvedBy: true,
+  status: true,
+  adminNote: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Transaction = typeof transactions.$inferSelect;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
+export type Transfer = typeof transfers.$inferSelect;
+export type InsertTransfer = z.infer<typeof insertTransferSchema>;
 
 // Auth types
 export const loginSchema = z.object({

@@ -1,8 +1,13 @@
 {
+  "/[...slug]/page": "/[...slug]",
   "/_global-error/page": "/_global-error",
   "/_not-found/page": "/_not-found",
+  "/admin/transfers/page": "/admin/transfers",
   "/api/admin/transactions/list/route": "/api/admin/transactions/list",
   "/api/admin/transactions/route": "/api/admin/transactions",
+  "/api/admin/transfers/[id]/approve/route": "/api/admin/transfers/[id]/approve",
+  "/api/admin/transfers/[id]/reject/route": "/api/admin/transfers/[id]/reject",
+  "/api/admin/transfers/route": "/api/admin/transfers",
   "/api/admin/users/[id]/approve/route": "/api/admin/users/[id]/approve",
   "/api/admin/users/[id]/reject/route": "/api/admin/users/[id]/reject",
   "/api/admin/users/route": "/api/admin/users",
@@ -13,6 +18,9 @@
   "/api/auth/reset-password/route": "/api/auth/reset-password",
   "/api/auth/verify-otp/route": "/api/auth/verify-otp",
   "/api/transactions/route": "/api/transactions",
+  "/api/transfers/name-enquiry/route": "/api/transfers/name-enquiry",
+  "/api/transfers/route": "/api/transfers",
   "/api/user/route": "/api/user",
-  "/page": "/"
+  "/page": "/",
+  "/transfer/page": "/transfer"
 }

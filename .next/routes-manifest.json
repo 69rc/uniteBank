@@ -22,6 +22,22 @@
   },
   "dynamicRoutes": [
     {
+      "page": "/api/admin/transfers/[id]/approve",
+      "regex": "^/api/admin/transfers/([^/]+?)/approve(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/admin/transfers/(?<nxtPid>[^/]+?)/approve(?:/)?$"
+    },
+    {
+      "page": "/api/admin/transfers/[id]/reject",
+      "regex": "^/api/admin/transfers/([^/]+?)/reject(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/admin/transfers/(?<nxtPid>[^/]+?)/reject(?:/)?$"
+    },
+    {
       "page": "/api/admin/users/[id]/approve",
       "regex": "^/api/admin/users/([^/]+?)/approve(?:/)?$",
       "routeKeys": {
@@ -36,6 +52,14 @@
         "nxtPid": "nxtPid"
       },
       "namedRegex": "^/api/admin/users/(?<nxtPid>[^/]+?)/reject(?:/)?$"
+    },
+    {
+      "page": "/[...slug]",
+      "regex": "^/(.+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug"
+      },
+      "namedRegex": "^/(?<nxtPslug>.+?)(?:/)?$"
     }
   ],
   "staticRoutes": [
@@ -58,6 +82,12 @@
       "namedRegex": "^/_not\\-found(?:/)?$"
     },
     {
+      "page": "/admin/transfers",
+      "regex": "^/admin/transfers(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/transfers(?:/)?$"
+    },
+    {
       "page": "/api/admin/transactions",
       "regex": "^/api/admin/transactions(?:/)?$",
       "routeKeys": {},
@@ -68,6 +98,12 @@
       "regex": "^/api/admin/transactions/list(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/admin/transactions/list(?:/)?$"
+    },
+    {
+      "page": "/api/admin/transfers",
+      "regex": "^/api/admin/transfers(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/admin/transfers(?:/)?$"
     },
     {
       "page": "/api/admin/users",
@@ -118,10 +154,28 @@
       "namedRegex": "^/api/transactions(?:/)?$"
     },
     {
+      "page": "/api/transfers",
+      "regex": "^/api/transfers(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/transfers(?:/)?$"
+    },
+    {
+      "page": "/api/transfers/name-enquiry",
+      "regex": "^/api/transfers/name\\-enquiry(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/transfers/name\\-enquiry(?:/)?$"
+    },
+    {
       "page": "/api/user",
       "regex": "^/api/user(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/user(?:/)?$"
+    },
+    {
+      "page": "/transfer",
+      "regex": "^/transfer(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/transfer(?:/)?$"
     }
   ],
   "dataRoutes": [],

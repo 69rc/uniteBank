@@ -1,8 +1,13 @@
 {
+  "/[...slug]/page": "app/[...slug]/page.js",
   "/_global-error/page": "app/_global-error/page.js",
   "/_not-found/page": "app/_not-found/page.js",
+  "/admin/transfers/page": "app/admin/transfers/page.js",
   "/api/admin/transactions/list/route": "app/api/admin/transactions/list/route.js",
   "/api/admin/transactions/route": "app/api/admin/transactions/route.js",
+  "/api/admin/transfers/[id]/approve/route": "app/api/admin/transfers/[id]/approve/route.js",
+  "/api/admin/transfers/[id]/reject/route": "app/api/admin/transfers/[id]/reject/route.js",
+  "/api/admin/transfers/route": "app/api/admin/transfers/route.js",
   "/api/admin/users/[id]/approve/route": "app/api/admin/users/[id]/approve/route.js",
   "/api/admin/users/[id]/reject/route": "app/api/admin/users/[id]/reject/route.js",
   "/api/admin/users/route": "app/api/admin/users/route.js",
@@ -13,6 +18,9 @@
   "/api/auth/reset-password/route": "app/api/auth/reset-password/route.js",
   "/api/auth/verify-otp/route": "app/api/auth/verify-otp/route.js",
   "/api/transactions/route": "app/api/transactions/route.js",
+  "/api/transfers/name-enquiry/route": "app/api/transfers/name-enquiry/route.js",
+  "/api/transfers/route": "app/api/transfers/route.js",
   "/api/user/route": "app/api/user/route.js",
-  "/page": "app/page.js"
+  "/page": "app/page.js",
+  "/transfer/page": "app/transfer/page.js"
 }

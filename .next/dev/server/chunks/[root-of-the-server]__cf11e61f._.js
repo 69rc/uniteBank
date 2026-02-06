@@ -713,6 +713,98 @@ class SupabaseAdminStorage {
         // Transform snake_case response to camelCase to match schema
         return data?.map(snakeToCamel) || [];
     }
+    // Transfers
+    async getAllPendingTransfers() {
+        const adminClient = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createAdminSupabaseClient"])();
+        const { data, error } = await adminClient.from('transfers').select(`
+        id,
+        sender_id,
+        recipient_id,
+        amount,
+        description,
+        status,
+        admin_note,
+        approved_by,
+        created_at,
+        processed_at
+      `).eq('status', 'PENDING').order('created_at', {
+            ascending: false
+        });
+        if (error) throw error;
+        // Transform snake_case response to camelCase to match schema
+        return data?.map(snakeToCamel) || [];
+    }
+    async approveTransfer(transferId, adminId) {
+        const adminClient = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createAdminSupabaseClient"])();
+        // 1. Fetch transfer details
+        const { data: transfer, error: fetchError } = await adminClient.from('transfers').select('*').eq('id', transferId).single();
+        if (fetchError || !transfer) throw new Error('Transfer not found');
+        if (transfer.status !== 'PENDING') throw new Error('Transfer is not pending');
+        const amount = parseFloat(transfer.amount);
+        const senderId = transfer.sender_id;
+        const recipientId = transfer.recipient_id;
+        // 2. Fetch Sender and Recipient
+        const { data: sender, error: senderError } = await adminClient.from('users').select('balance').eq('id', senderId).single();
+        if (senderError || !sender) throw new Error('Sender not found');
+        const { data: recipient, error: recipientError } = await adminClient.from('users').select('balance').eq('id', recipientId).single();
+        if (recipientError || !recipient) throw new Error('Recipient not found');
+        const senderBalance = parseFloat(sender.balance);
+        if (senderBalance < amount) throw new Error('Insufficient funds');
+        // 3. Perform Updates (Sequentially for now, ideally RPC)
+        // Debit Sender
+        const newSenderBalance = (senderBalance - amount).toFixed(2);
+        const { error: debitError } = await adminClient.from('users').update({
+            balance: newSenderBalance
+        }).eq('id', senderId);
+        if (debitError) throw new Error('Failed to debit sender');
+        // Credit Recipient
+        const recipientBalance = parseFloat(recipient.balance);
+        const newRecipientBalance = (recipientBalance + amount).toFixed(2);
+        const { error: creditError } = await adminClient.from('users').update({
+            balance: newRecipientBalance
+        }).eq('id', recipientId);
+        if (creditError) {
+            // Rollback sender debit (manual compensation)
+            await adminClient.from('users').update({
+                balance: sender.balance
+            }).eq('id', senderId);
+            throw new Error('Failed to credit recipient');
+        }
+        // Create Debit Transaction
+        await adminClient.from('transactions').insert([
+            {
+                user_id: senderId,
+                type: 'DEBIT',
+                amount: amount.toFixed(2),
+                description: `Transfer to ${recipientId}: ${transfer.description}`,
+                created_by: 'ADMIN'
+            }
+        ]);
+        // Create Credit Transaction
+        await adminClient.from('transactions').insert([
+            {
+                user_id: recipientId,
+                type: 'CREDIT',
+                amount: amount.toFixed(2),
+                description: `Transfer from ${senderId}: ${transfer.description}`,
+                created_by: 'ADMIN'
+            }
+        ]);
+        // Update Transfer Status
+        await adminClient.from('transfers').update({
+            status: 'APPROVED',
+            approved_by: adminId,
+            processed_at: new Date().toISOString()
+        }).eq('id', transferId);
+    }
+    async rejectTransfer(transferId, adminId) {
+        const adminClient = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createAdminSupabaseClient"])();
+        await adminClient.from('transfers').update({
+            status: 'REJECTED',
+            approved_by: adminId,
+            processed_at: new Date().toISOString()
+        }).eq('id', transferId);
+    }
 }
 class SupabasePublicStorage {
     // Public methods that don't require admin privileges
@@ -957,6 +1049,16 @@ class SupabasePublicStorage {
     }
     async getAllTransactions() {
         throw new Error("Get all transactions requires admin privileges");
+    }
+    // Transfers - Not implemented for public storage
+    async getAllPendingTransfers() {
+        throw new Error("Unauthorized");
+    }
+    async approveTransfer(transferId, adminId) {
+        throw new Error("Unauthorized");
+    }
+    async rejectTransfer(transferId, adminId) {
+        throw new Error("Unauthorized");
     }
 }
 const adminStorage = new SupabaseAdminStorage();

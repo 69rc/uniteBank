@@ -49,6 +49,10 @@ export interface IStorage {
   createTransaction(transaction: any): Promise<Transaction>;
   getTransactionsByUserId(userId: number): Promise<Transaction[]>;
   getAllTransactions(): Promise<Transaction[]>;
+
+  // Transfers
+  createTransfer(transfer: any): Promise<any>;
+  getTransfersByUserId(userId: string): Promise<any[]>;
 }
 
 export class SupabaseStorage implements IStorage {
@@ -561,6 +565,57 @@ export class SupabaseStorage implements IStorage {
     if (error) throw error;
     // Transform snake_case response to camelCase to match schema
     return data?.map(snakeToCamel) as Transaction[] || [];
+  }
+
+  // Transfers
+  async createTransfer(transfer: any): Promise<any> {
+    // Convert camelCase to snake_case for insertion
+    const snakeTransfer = camelToSnake(transfer);
+    const { data, error } = await supabase
+      .from('transfers')
+      .insert([snakeTransfer])
+      .select(`
+        id,
+        sender_id,
+        recipient_id,
+        amount,
+        description,
+        status,
+        admin_note,
+        approved_by,
+        created_at,
+        processed_at
+      `)
+      .single();
+
+    if (error) throw error;
+    // Transform snake_case response to camelCase to match schema
+    if (data) {
+      return snakeToCamel(data);
+    }
+    throw new Error('Transfer creation failed');
+  }
+
+  async getTransfersByUserId(userId: string): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('transfers')
+      .select(`
+        id,
+        sender_id,
+        recipient_id,
+        amount,
+        description,
+        status,
+        admin_note,
+        approved_by,
+        created_at,
+        processed_at
+      `)
+      .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data?.map(snakeToCamel) || [];
   }
 }
 

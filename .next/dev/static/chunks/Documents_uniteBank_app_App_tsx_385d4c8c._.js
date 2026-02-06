@@ -1,11 +1,18 @@
 (globalThis.TURBOPACK_CHUNK_LISTS || (globalThis.TURBOPACK_CHUNK_LISTS = [])).push({
     script: typeof document === "object" ? document.currentScript : undefined,
     chunks: [
-  "static/chunks/Documents_uniteBank_b30e1df7._.js",
+  "static/chunks/Documents_uniteBank_app_components_5fafe716._.js",
+  "static/chunks/Documents_uniteBank_app_pages_650449bb._.js",
+  "static/chunks/Documents_uniteBank_app_5f21ed97._.js",
+  "static/chunks/Documents_uniteBank_shared_6f7c4c28._.js",
   "static/chunks/2b953_@tanstack_query-core_build_modern_c3b279e1._.js",
   "static/chunks/2b953_zod_lib_index_mjs_5bc87635._.js",
   "static/chunks/2b953_drizzle-orm_8d7c2cff._.js",
-  "static/chunks/2b953_ae5600bd._.js"
+  "static/chunks/2b953_lodash_ad30763b._.js",
+  "static/chunks/2b953_recharts_es6_a7103c6f._.js",
+  "static/chunks/2b953_@radix-ui_171a557e._.js",
+  "static/chunks/2b953_@floating-ui_49d551c1._.js",
+  "static/chunks/2b953_ec38c9b5._.js"
 ],
     source: "dynamic"
 });

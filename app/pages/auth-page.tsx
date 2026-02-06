@@ -31,7 +31,7 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors">
       <div className="grid lg:grid-cols-2 min-h-screen">
         {/* Left Panel - Branding */}
         <div className="relative hidden lg:flex flex-col justify-between p-12 bg-slate-900 text-white overflow-hidden">
@@ -79,7 +79,7 @@ export default function AuthPage() {
         </div>
 
         {/* Right Panel - Auth Forms */}
-        <div className="flex items-center justify-center p-4 sm:p-8">
+        <div className="flex items-center justify-center p-4 sm:p-8 bg-white dark:bg-slate-950">
           <div className="w-full max-w-md space-y-6">
             <div className="flex items-center gap-3 lg:hidden text-slate-900">
               <div className="bg-gradient-to-tr from-yellow-400 to-yellow-600 p-2 rounded-xl">
@@ -91,14 +91,21 @@ export default function AuthPage() {
               </div>
             </div>
             {registeredEmail ? (
-              <PostRegistrationNotice email={registeredEmail} onBack={() => setRegisteredEmail(null)} />
+              <PostRegistrationNotice
+                email={registeredEmail}
+                onBack={() => setRegisteredEmail(null)}
+                onLogin={() => {
+                  setRegisteredEmail(null);
+                  setActiveTab("login");
+                }}
+              />
             ) : (
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-8 p-1 bg-slate-200/50">
-                  <TabsTrigger value="login" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                <TabsList className="grid w-full grid-cols-2 mb-8 p-1 bg-slate-200/50 dark:bg-slate-800/50">
+                  <TabsTrigger value="login" className="data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-900">
                     Login
                   </TabsTrigger>
-                  <TabsTrigger value="register" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                  <TabsTrigger value="register" className="data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-900">
                     Register
                   </TabsTrigger>
                 </TabsList>
@@ -267,18 +274,19 @@ function RegisterForm({ onSuccess }: { onSuccess: (email: string) => void }) {
                   };
 
                   return (
-                  <FormItem>
-                    <FormLabel>Other Name (Optional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        value={field.value || ''}
-                        onChange={handleChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                );}}
+                    <FormItem>
+                      <FormLabel>Other Name (Optional)</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          value={field.value || ''}
+                          onChange={handleChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
 
               <div className="grid gap-4 sm:grid-cols-2">
@@ -614,9 +622,7 @@ function RegisterForm({ onSuccess }: { onSuccess: (email: string) => void }) {
   );
 }
 
-function PostRegistrationNotice({ email, onBack }: { email: string; onBack: () => void }) {
-  const [, setLocation] = useLocation();
-
+function PostRegistrationNotice({ email, onBack, onLogin }: { email: string; onBack: () => void; onLogin: () => void }) {
   return (
     <Card className="border-none shadow-xl shadow-slate-200/60 animate-in fade-in slide-in-from-right-4">
       <CardHeader className="text-center space-y-4">
@@ -637,7 +643,7 @@ function PostRegistrationNotice({ email, onBack }: { email: string; onBack: () =
           <Button variant="outline" onClick={onBack}>
             Edit Application
           </Button>
-          <Button onClick={() => setLocation("/auth")}>Back to Login</Button>
+          <Button onClick={onLogin}>Back to Login</Button>
         </div>
       </CardContent>
     </Card>
