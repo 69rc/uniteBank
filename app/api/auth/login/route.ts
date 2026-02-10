@@ -3,6 +3,7 @@ import { api } from '@shared/routes';
 import { adminStorage } from '@server/storage';
 import { comparePasswords } from '../../utils/auth';
 import { createSession } from '@lib/auth';
+import { cookies } from 'next/headers';
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,6 +13,16 @@ export async function POST(request: NextRequest) {
     if (!user || !(await comparePasswords(input.password, user.password))) {
       return Response.json({ message: "Invalid email or password" }, { status: 401 });
     }
+
+    const cookieStore = await cookies();
+    const storedCaptcha = cookieStore.get('captcha_code')?.value;
+
+    if (!storedCaptcha || input.loginCode !== storedCaptcha) {
+      return Response.json({ message: "Invalid verification code. Please try again." }, { status: 401 });
+    }
+
+    // Clear captcha cookie after successful verification
+    cookieStore.delete('captcha_code');
     console.log(user);
     if (user.status === "PENDING") {
       return Response.json({ message: "Account pending admin approval" }, { status: 403 });

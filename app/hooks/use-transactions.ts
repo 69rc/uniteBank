@@ -65,3 +65,30 @@ export function useCreateTransaction() {
     },
   });
 }
+
+export function useUpdateTransaction() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: Partial<Transaction> }) => {
+      const res = await fetch(`/api/admin/transactions/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const errorBody = await res.json().catch(() => ({}));
+        throw new Error(errorBody.message || "Failed to update transaction");
+      }
+      return await res.json() as Transaction;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.admin.listAllTransactions.path] });
+      toast({ title: "Success", description: "Transaction updated successfully" });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+}

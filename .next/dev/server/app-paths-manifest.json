@@ -1,16 +1,11 @@
 {
   "/[...slug]/page": "app/[...slug]/page.js",
+  "/api/admin/transactions/[id]/route": "app/api/admin/transactions/[id]/route.js",
   "/api/admin/transactions/route": "app/api/admin/transactions/route.js",
-  "/api/admin/transfers/[id]/approve/route": "app/api/admin/transfers/[id]/approve/route.js",
-  "/api/admin/transfers/route": "app/api/admin/transfers/route.js",
-  "/api/admin/users/[id]/approve/route": "app/api/admin/users/[id]/approve/route.js",
   "/api/admin/users/route": "app/api/admin/users/route.js",
+  "/api/auth/captcha/route": "app/api/auth/captcha/route.js",
   "/api/auth/login/route": "app/api/auth/login/route.js",
-  "/api/auth/logout/route": "app/api/auth/logout/route.js",
-  "/api/auth/register/route": "app/api/auth/register/route.js",
   "/api/transactions/route": "app/api/transactions/route.js",
-  "/api/transfers/name-enquiry/route": "app/api/transfers/name-enquiry/route.js",
-  "/api/transfers/route": "app/api/transfers/route.js",
   "/api/user/route": "app/api/user/route.js",
   "/page": "app/page.js"
 }

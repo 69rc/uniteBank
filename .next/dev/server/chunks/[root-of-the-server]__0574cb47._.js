@@ -713,6 +713,25 @@ class SupabaseAdminStorage {
         // Transform snake_case response to camelCase to match schema
         return data?.map(snakeToCamel) || [];
     }
+    async updateTransaction(id, data) {
+        const adminClient = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createAdminSupabaseClient"])();
+        // Convert camelCase to snake_case for insertion
+        const snakeData = camelToSnake(data);
+        const { data: updated, error } = await adminClient.from('transactions').update(snakeData).eq('id', id).select(`
+        id,
+        user_id,
+        type,
+        amount,
+        description,
+        created_by,
+        created_at
+      `).single();
+        if (error) throw error;
+        if (updated) {
+            return snakeToCamel(updated);
+        }
+        throw new Error('Transaction update failed');
+    }
     // Transfers
     async getAllPendingTransfers() {
         const adminClient = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$uniteBank$2f$lib$2f$supabase$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createAdminSupabaseClient"])();
@@ -1059,6 +1078,9 @@ class SupabasePublicStorage {
     }
     async rejectTransfer(transferId, adminId) {
         throw new Error("Unauthorized");
+    }
+    async updateTransaction(id, data) {
+        throw new Error("Update transaction requires admin privileges");
     }
 }
 const adminStorage = new SupabaseAdminStorage();

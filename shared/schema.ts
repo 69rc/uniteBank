@@ -28,7 +28,7 @@ export const users = pgTable("users", {
   selfieUrl: text("selfie_url"),
 
   // Account Info
-  accountType: text("account_type", { enum: ["SAVINGS", "CURRENT", "CHECKING"] }).notNull(),
+  accountType: text("account_type", { enum: ["SAVINGS", "CURRENT", "CHECKING", "BUSINESS"] }).notNull(),
   currency: text("currency").default("USD").notNull(),
   accountPurpose: text("account_purpose"),
 
@@ -119,6 +119,7 @@ export type InsertTransfer = z.infer<typeof insertTransferSchema>;
 export const loginSchema = z.object({
   email: z.string().email(),
   password: z.string(),
+  loginCode: z.string().min(1, "Login code is required"),
 });
 
 export const otpSchema = z.object({

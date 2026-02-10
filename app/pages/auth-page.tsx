@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Landmark, ArrowRight, Loader2, CheckCircle } from "lucide-react";
+import { Landmark, ArrowRight, Loader2, CheckCircle, RefreshCw } from "lucide-react";
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState("login");
@@ -132,9 +132,29 @@ export default function AuthPage() {
 
 function LoginForm() {
   const { loginMutation } = useAuth();
+  const [captcha, setCaptcha] = useState<string>("");
+  const [loadingCaptcha, setLoadingCaptcha] = useState(false);
+
+  const fetchCaptcha = async () => {
+    setLoadingCaptcha(true);
+    try {
+      const res = await fetch("/api/auth/captcha");
+      const data = await res.json();
+      setCaptcha(data.code);
+    } catch (error) {
+      console.error("Failed to fetch captcha", error);
+    } finally {
+      setLoadingCaptcha(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCaptcha();
+  }, []);
+
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { email: "", password: "", loginCode: "" },
   });
 
   return (
@@ -168,6 +188,65 @@ function LoginForm() {
                   <FormControl>
                     <Input type="password" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="loginCode"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Verification Code</FormLabel>
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <FormControl>
+                        <Input placeholder="Enter code" {...field} maxLength={6} />
+                      </FormControl>
+                    </div>
+                    <div className="flex items-center gap-2 px-3 border rounded-md bg-slate-50 select-none">
+                      {loadingCaptcha ? (
+                        <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+                      ) : (
+                        <div className="flex gap-1.5 px-1">
+                          {captcha.split("").map((char, i) => {
+                            // Seed random based on index and captcha code
+                            const rotation = ((i * 13 + char.charCodeAt(0)) % 40) - 20; // -20 to 20 deg
+                            const weight = [400, 600, 700, 800][(i + char.charCodeAt(0)) % 4];
+                            const colors = ["text-slate-600", "text-blue-600", "text-indigo-600", "text-slate-900"];
+                            const color = colors[(i + char.charCodeAt(0)) % colors.length];
+
+                            return (
+                              <span
+                                key={i}
+                                className={`font-mono inline-block ${color}`}
+                                style={{
+                                  transform: `rotate(${rotation}deg)`,
+                                  fontWeight: weight,
+                                  fontSize: '1.1rem'
+                                }}
+                              >
+                                {char}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-slate-400 hover:text-slate-600"
+                        onClick={fetchCaptcha}
+                        disabled={loadingCaptcha}
+                      >
+                        <RefreshCw className={`h-3 w-3 ${loadingCaptcha ? "animate-spin" : ""}`} />
+                      </Button>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-1 italic">
+                    Please enter the 6-digit code shown above to verify you're human.
+                  </p>
                   <FormMessage />
                 </FormItem>
               )}
@@ -522,6 +601,7 @@ function RegisterForm({ onSuccess }: { onSuccess: (email: string) => void }) {
                           <option value="SAVINGS">Savings Account</option>
                           <option value="CURRENT">Current Account</option>
                           <option value="CHECKING">Checking Account</option>
+                          <option value="BUSINESS">Business Account</option>
                         </select>
                       </FormControl>
                       <FormMessage />

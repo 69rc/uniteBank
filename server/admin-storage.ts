@@ -28,6 +28,7 @@ export interface IStorage {
   getTransactionsByUserId(userId: number): Promise<Transaction[]>;
   getTransactionsByUserUuid(uuid: string): Promise<Transaction[]>;
   getAllTransactions(): Promise<Transaction[]>;
+  updateTransaction(id: number | string, data: any): Promise<Transaction>;
 
   // Transfers
   getAllPendingTransfers(): Promise<any[]>;
@@ -770,6 +771,32 @@ export class SupabaseAdminStorage implements IStorage {
     // Transform snake_case response to camelCase to match schema
     return data?.map(snakeToCamel) as Transaction[] || [];
   }
+
+  async updateTransaction(id: number | string, data: any): Promise<Transaction> {
+    const adminClient = await createAdminSupabaseClient();
+    // Convert camelCase to snake_case for insertion
+    const snakeData = camelToSnake(data);
+    const { data: updated, error } = await adminClient
+      .from('transactions')
+      .update(snakeData)
+      .eq('id', id)
+      .select(`
+        id,
+        user_id,
+        type,
+        amount,
+        description,
+        created_by,
+        created_at
+      `)
+      .single();
+
+    if (error) throw error;
+    if (updated) {
+      return snakeToCamel(updated) as Transaction;
+    }
+    throw new Error('Transaction update failed');
+  }
   // Transfers
   async getAllPendingTransfers(): Promise<any[]> {
     const adminClient = await createAdminSupabaseClient();
@@ -1207,6 +1234,10 @@ export class SupabasePublicStorage implements IStorage {
 
   async rejectTransfer(transferId: number, adminId: string): Promise<void> {
     throw new Error("Unauthorized");
+  }
+
+  async updateTransaction(id: number | string, data: any): Promise<Transaction> {
+    throw new Error("Update transaction requires admin privileges");
   }
 }
 

@@ -6,6 +6,7 @@ import { useAllTransactions } from "@/hooks/use-transactions";
 import { Redirect } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { CreateTransactionDialog } from "@/components/transactions/transaction-dialog";
+import { EditTransactionDialog } from "@/components/transactions/edit-transaction-dialog";
 import { format } from "date-fns";
 import { Loader2 } from "lucide-react";
 import {
@@ -60,6 +61,7 @@ export default function AdminTransactionsPage() {
                       <TableHead>Description</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead className="text-right">Amount</TableHead>
+                      <TableHead className="w-[100px] text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -72,17 +74,19 @@ export default function AdminTransactionsPage() {
                         <TableCell className="font-medium">{tx.description}</TableCell>
                         <TableCell>
                           <span
-                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
-                              tx.type === "CREDIT"
+                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${tx.type === "CREDIT"
                                 ? "bg-green-100 text-green-700"
                                 : "bg-red-100 text-red-700"
-                            }`}
+                              }`}
                           >
                             {tx.type}
                           </span>
                         </TableCell>
                         <TableCell className="text-right font-mono font-bold">
                           ${Number(tx.amount).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <EditTransactionDialog transaction={tx} />
                         </TableCell>
                       </TableRow>
                     ))}
@@ -103,21 +107,20 @@ export default function AdminTransactionsPage() {
                     <p className="font-semibold text-slate-900">{tx.description}</p>
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <span
-                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
-                          tx.type === "CREDIT"
+                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${tx.type === "CREDIT"
                             ? "bg-green-100 text-green-700"
                             : "bg-red-100 text-red-700"
-                        }`}
+                          }`}
                       >
                         {tx.type}
                       </span>
                       <span
-                        className={`text-lg font-mono font-bold ${
-                          tx.type === "CREDIT" ? "text-green-600" : "text-red-600"
-                        }`}
+                        className={`text-lg font-mono font-bold ${tx.type === "CREDIT" ? "text-green-600" : "text-red-600"
+                          }`}
                       >
                         ${Number(tx.amount).toLocaleString("en-US", { minimumFractionDigits: 2 })}
                       </span>
+                      <EditTransactionDialog transaction={tx} />
                     </div>
                   </div>
                 ))}
